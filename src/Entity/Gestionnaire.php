@@ -18,13 +18,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["G:read:simple"]],
+            "normalization_context" => ["groups" => ["read:simple"]],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressource"
         ],
         "post"=>[
             "path" => "/register/gestionnaire",
-            "denormalization_context" => ["groups" => ["G:write"]],
+            "denormalization_context" => ["groups" => ["write"]],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressource"
         ]
@@ -33,7 +33,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["G:read:all"]]
+            "normalization_context" => ["groups" => ["read:all"]]
         ],
         "put" => [
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
@@ -45,17 +45,13 @@ class Gestionnaire extends User
 {
     #[ORM\OneToMany(mappedBy: 'gestionnaire', targetEntity: Commande::class)]
     #[ApiSubresource]
-    #[Groups(["G:read:all"])]
+    #[Groups(["read:all"])]
     private $commandes;
-
-    #[ORM\OneToMany(mappedBy: 'gestionnaire', targetEntity: Burger::class)]
-    #[ApiSubresource]
-    private $burgers;
 
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
-        $this->burgers = new ArrayCollection();
+        $this->roles [] = "ROLE_GESTIONNAIRE";
     }
 
     /**
@@ -82,37 +78,6 @@ class Gestionnaire extends User
             // set the owning side to null (unless already changed)
             if ($commande->getGestionnaire() === $this) {
                 $commande->setGestionnaire(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Burger>
-     */
-    public function getBurgers(): Collection
-    {
-        return $this->burgers;
-    }
-
-
-    public function addBurger(Burger $burger): self
-    {
-        if (!$this->burgers->contains($burger)) {
-            $this->burgers[] = $burger;
-            $burger->setGestionnaire($this);
-        }
-
-        return $this;
-    }
-
-    public function removeBurger(Burger $burger): self
-    {
-        if ($this->burgers->removeElement($burger)) {
-            // set the owning side to null (unless already changed)
-            if ($burger->getGestionnaire() === $this) {
-                $burger->setGestionnaire(null);
             }
         }
 

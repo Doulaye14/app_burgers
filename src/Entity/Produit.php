@@ -14,34 +14,32 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\InheritanceType("JOINED")]
 #[ORM\DiscriminatorColumn(name:"type",type:"string")]
-#[ORM\DiscriminatorMap(["burger"=>"Burger","menus"=>"Menus","complement"=>"Complement"])]
+#[ORM\DiscriminatorMap(["burger"=>"Burger","menus"=>"Menus","frites"=>"Frites","boisson"=>"Boisson"])]
 #[ApiResource]
 class Produit
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(["M:p:write"])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups([
-        'burger:read:simple','burger:read:all','write',
-        'F:read:simple',"F:write",
-        "B:read:simple","B:write"
-     ])]
+    #[Groups(['read:simple','read:all','write',"M:write"])]
     private $nom;
 
     #[ORM\Column(type: 'float')]
-    #[Groups([
-        'burger:read:simple','burger:read:all','write',
-        'F:read:simple',"F:write",
-        "B:read:simple","B:write"
-     ])]
+    #[Groups(['read:simple','read:all','write',"M:write"])]
     private $prix;
 
     #[ORM\ManyToMany(targetEntity: Commande::class, mappedBy: 'produits')]
-    #[Groups('burger:read:all',"B:read:simple")]
+    #[Groups('read:all',"read:simple")]
+    #[ApiSubresource]
     private $commandes;
+
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'produits')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $user;
 
     public function __construct()
     {
@@ -100,6 +98,18 @@ class Produit
         if ($this->commandes->removeElement($commande)) {
             $commande->removeProduit($this);
         }
+
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
 
         return $this;
     }

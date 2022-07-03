@@ -13,39 +13,36 @@ use Symfony\Component\Serializer\Annotation\Groups;
     collectionOperations:[
         "get"=>[
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups"=>["F:read:simple"]],
+            "normalization_context" => ["groups"=>["read:simple"]],
         ],
         "post"=>[
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressouce !",
-            "denormalization_context" => ["groups"=>["F:write"]]
+            "denormalization_context" => ["groups"=>["write"]]
         ]
     ],
     itemOperations:[
-        "get",
-        "put"
+        "get"=>[
+            "normalization_context" => ["groups"=>["read:all"]],
+            "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            "security_message" => "Vous n'avez pas accès à cette ressouce !",
+        ],
+        "put"=>[
+            "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            "security_message" => "Vous n'avez pas accès à cette ressouce !"
+        ]
     ]
 )]
-class Frites extends Complement
+class Frites extends Produit
 {
-    #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    #[Groups(["F:read:simple","F:write"])]
-    private $lot;
+
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(["read:simple","read:all","write"])]
+    private $portions;
 
     #[ORM\ManyToOne(targetEntity: Menus::class, inversedBy: 'frites')]
+    #[Groups(["read:all"])]
     private $menus;
-
-    public function getLot(): ?string
-    {
-        return $this->lot;
-    }
-
-    public function setLot(?string $lot): self
-    {
-        $this->lot = $lot;
-
-        return $this;
-    }
 
     public function getMenus(): ?Menus
     {
@@ -55,6 +52,18 @@ class Frites extends Complement
     public function setMenus(?Menus $menus): self
     {
         $this->menus = $menus;
+
+        return $this;
+    }
+
+    public function getPortions(): ?string
+    {
+        return $this->portions;
+    }
+
+    public function setPortions(string $portions): self
+    {
+        $this->portions = $portions;
 
         return $this;
     }

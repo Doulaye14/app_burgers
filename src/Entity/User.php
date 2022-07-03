@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -25,54 +27,39 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["burger:read:all","write","G:read:all","L:read:all","C:read:all"])]
+    #[Groups(["read:simple","write","read:all","M:write"])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups([
-            "burger:read:all","write",
-            "G:read:simple","G:write","G:read:all",
-            "L:read:simple","L:write","L:read:all",
-            "C:read:simple","C:write","C:read:all"
-        ])]
+    #[Groups(["read:all","write","read:simple"])]
     protected $email;
 
     #[ORM\Column(type: 'json')]
-    #[Groups([
-        "G:read:all",
-        "L:read:all",
-        "C:read:all"
-    ])]
+    #[Groups(["read:all","read:simple"])]
     protected $roles = [];
 
     #[ORM\Column(type: 'string')]
     protected $password;
 
     #[SerializedName("password")]
-    #[Groups(["G:write","L:write","C:write"])]
+    #[Groups(["write"])]
     protected $plainPassword;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups([
-        "G:read:simple","G:write","G:read:all",
-        "L:read:simple","L:write","L:read:all",
-        "C:read:simple","C:write","C:read:all"
-    ])]
+    #[Groups(["read:simple","write","read:all"])]
     protected $prenom;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups([
-        "G:read:simple","G:write","G:read:all",
-        "L:read:simple","L:write","L:read:all",
-        "C:read:simple","C:write","C:read:all"
-    ])]
+    #[Groups(["read:simple","write","read:all",])]
     protected $nom;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Produit::class)]
+    #[Groups(["read:simple","read:all",])]
+    private $produits;
 
     public function __construct()
     {
-        $tab = explode("\\", get_called_class());
-        $tab = strtoupper($tab[2]);
-        $this->roles [] = "ROLE_".$tab;
+        $this->produits = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -185,6 +172,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPlainPassword($plainPassword)
     {
         $this->plainPassword = $plainPassword;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Produit>
+     */
+    public function getProduits(): Collection
+    {
+        return $this->produits;
+    }
+
+    public function addProduit(Produit $produit): self
+    {
+        if (!$this->produits->contains($produit)) {
+            $this->produits[] = $produit;
+            $produit->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeProduit(Produit $produit): self
+    {
+        if ($this->produits->removeElement($produit)) {
+            // set the owning side to null (unless already changed)
+            if ($produit->getUser() === $this) {
+                $produit->setUser(null);
+            }
+        }
 
         return $this;
     }

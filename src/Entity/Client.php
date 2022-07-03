@@ -16,24 +16,27 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["C:read:simple"]],
+            "normalization_context" => ["groups" => ["read:simple"]],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "securi_message" => "Vous n'avez pas accès à cette ressource"
         ],
         "post_register"=>[
             "method" => "post",
             "path" => "/register/client",
-            "denormalization_context" => ["groups" => ["C:write"]]
+            "denormalization_context" => ["groups" => ["write"]]
         ]
     ],
     itemOperations:
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["C:read:all"]]
+            "normalization_context" => ["groups" => ["read:all"]],
+            "security"=>"is_granted('ROLE_GESTIONNAIRE')",
+            "security_message"=>"Vous n'avez pas accès à cette ressouce !"
         ],
         "put" => [
-
+            "security"=>"is_granted('ROLE_GESTIONNAIRE')",
+            "security_message"=>"Vous n'avez pas accès à cette ressouce !"
         ]
     ]
 )]
@@ -41,16 +44,17 @@ class Client extends User
 {
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["C:read:simple","C:write","C:read:all"])]
+    #[Groups(["read:simple","write","read:all"])]
     private $phone;
 
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Commande::class)]
-    #[Groups(["C:read:all"])]
+    #[Groups(["read:all"])]
     private $commandes;
 
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
+        $this->roles [] = "ROLE_CLIENT";
     }
 
     public function getPhone(): ?string

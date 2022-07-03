@@ -2,25 +2,61 @@
 
 namespace App\Entity;
 
-use App\Repository\LivraisonRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\LivraisonRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\MongoDbOdm\ItemDataProvider;
+use Symfony\Component\HttpFoundation\Response;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: LivraisonRepository::class)]
+#[ApiResource(
+    collectionOperations:[
+        "get"=>[
+            "status"=>Response::HTTP_OK,
+            "normalization_context"=>["groups"=>["read:simple"]],
+        ],
+        "post"=>[
+            "security"=>"is_granted('ROLE_GESTIONNAIRE')",
+            "security_message"=>"Vous n'avez accès à cette ressource !",
+            "denormalization_context" => ["groups" => ["L:write"]]
+        ]
+    ],
+    itemOperations:[
+        "get"=>[
+            "security"=>"is_granted('ROLE_GESTIONNAIRE')",
+            "security_message"=>"Vous n'avez accès à cette ressource !",
+            "normalization_context"=>["groups"=>["read:all"]],
+        ],
+        "put"=>[
+            "security"=>"is_granted('ROLE_GESTIONNAIRE')",
+            "security_message"=>"Vous n'avez accès à cette ressource !"
+        ]
+    ]
+
+)]
 class Livraison
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(["read:all"])]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'livraisons')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["read:simple","read:all","L:write"])]
     private $livreur;
 
     #[ORM\OneToMany(mappedBy: 'livraison', targetEntity: Commande::class)]
+    #[Groups(["read:simple","read:all","L:write"])]
     private $commandes;
+
+    #[ORM\ManyToOne(targetEntity: Quartier::class, inversedBy: 'livraisons')]
+    #[Groups(["read:simple","read:all","L:write"])]
+    private $quartier;
 
     public function __construct()
     {
@@ -70,6 +106,18 @@ class Livraison
                 $commande->setLivraison(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getQuartier(): ?Quartier
+    {
+        return $this->quartier;
+    }
+
+    public function setQuartier(?Quartier $quartier): self
+    {
+        $this->quartier = $quartier;
 
         return $this;
     }

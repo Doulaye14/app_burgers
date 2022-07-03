@@ -7,6 +7,7 @@ use App\Repository\MenusRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MenusRepository::class)]
 #[ApiResource(
@@ -15,7 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
             
         ],
         "post"=>[
-            
+            "denormalization_context"=>["groups"=>["M:write","M:p:write"]]
         ]
     ]
 )]
@@ -23,19 +24,26 @@ class Menus extends Produit
 {
 
     #[ORM\OneToMany(mappedBy: 'menus', targetEntity: Burger::class)]
+    #[Groups(["M:p:write"])]
     private $bugers;
 
     #[ORM\OneToMany(mappedBy: 'menus', targetEntity: Frites::class)]
+    #[Groups(["M:p:write"])]
     private $frites;
 
     #[ORM\OneToMany(mappedBy: 'menus', targetEntity: Boisson::class)]
+    #[Groups(["M:p:write"])]
     private $boissons;
+
+    #[ORM\ManyToMany(targetEntity: Taille::class, mappedBy: 'menu')]
+    private $tailles;
 
     public function __construct()
     {
         $this->bugers = new ArrayCollection();
         $this->frites = new ArrayCollection();
         $this->boissons = new ArrayCollection();
+        $this->tailles = new ArrayCollection();
     }
 
     /**
@@ -123,6 +131,33 @@ class Menus extends Produit
             if ($boisson->getMenus() === $this) {
                 $boisson->setMenus(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Taille>
+     */
+    public function getTailles(): Collection
+    {
+        return $this->tailles;
+    }
+
+    public function addTaille(Taille $taille): self
+    {
+        if (!$this->tailles->contains($taille)) {
+            $this->tailles[] = $taille;
+            $taille->addMenu($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTaille(Taille $taille): self
+    {
+        if ($this->tailles->removeElement($taille)) {
+            $taille->removeMenu($this);
         }
 
         return $this;

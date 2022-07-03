@@ -19,20 +19,20 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["L:read:simple"]],
+            "normalization_context" => ["groups" => ["read:simple"]],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "securi_message" => "Vous n'avez pas accès à cette ressource"
         ],
         "post"=>[
             "path" => "/register/livreur",
-            "denormalization_context" => ["groups" => ["L:write"]]
+            "denormalization_context" => ["groups" => ["write"]]
         ]
     ],
     itemOperations:
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["L:read:all"]]
+            "normalization_context" => ["groups" => ["read:all"]]
         ],
         "put" => [
 
@@ -43,11 +43,11 @@ class Livreur extends User
 {
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["L:read:simple","L:read:all"])]
+    #[Groups(["read:simple","read:all"])]
     private $etat = "Disponible";
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["L:read:all"])]
+    #[Groups(["read:all"])]
     private $matriculeMoto;
 
     #[ORM\OneToMany(mappedBy: 'livreur', targetEntity: Livraison::class)]
@@ -57,6 +57,7 @@ class Livreur extends User
     {
         $this->livraisons = new ArrayCollection();
         $this->matriculeMoto = "MOTO-".date_format(new DateTime, 'i-s');
+        $this->roles [] = "ROLE_LIVREUR";
     }
 
     public function getEtat(): ?string

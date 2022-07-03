@@ -2,28 +2,51 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\CommandeRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\CommandeRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\HttpFoundation\Response;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations:[
+        "get"=>[
+            "status"=> Response::HTTP_OK,
+            "normalization_context"=>["groups" => ["read:simple"]]
+        ],
+        "post"=>[
+            "denormalization_context"=>["groups" => ["C:write"]]
+        ]
+    ],
+    itemOperations:[
+        "get"=>[
+            "status"=> Response::HTTP_OK,
+            "normalization_context"=>["groups" => "read:all"]
+        ],
+        "put"
+    ]
+)]
 class Commande
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(["read:all"])]
     private $id;
 
     #[ORM\Column(type: 'integer')]
+    #[Groups(["read:all","read:simple","C:write"])]
     private $prixTotal;
 
     #[ORM\Column(type: 'date')]
+    #[Groups(["read:all","read:simple","C:write"])]
     private $date;
 
     #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(["read:all","read:simple","C:write"])]
     private $status;
 
     #[ORM\ManyToOne(targetEntity: Livraison::class, inversedBy: 'commandes')]
