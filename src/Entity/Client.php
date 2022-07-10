@@ -23,14 +23,15 @@ use Symfony\Component\Serializer\Annotation\Groups;
         "post_register"=>[
             "method" => "post",
             "path" => "/register/client",
-            "denormalization_context" => ["groups" => ["write"]]
+            "denormalization_context" => ["groups" => ["write"]],
+            "normalization_context" => ["groups" => ["u:r:all"]]
         ]
     ],
     itemOperations:
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["read:all"]],
+            "normalization_context" => ["groups" => [":r:all"]],
             "security"=>"is_granted('ROLE_GESTIONNAIRE')",
             "security_message"=>"Vous n'avez pas accès à cette ressouce !"
         ],
@@ -40,11 +41,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
         ]
     ]
 )]
+
 class Client extends User
 {
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all"])]
+    #[Groups(["read:simple","write","read:all","u:r:all"])]
     private $phone;
 
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Commande::class)]
@@ -99,4 +101,3 @@ class Client extends User
         return $this;
     }
 }
-

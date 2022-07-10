@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\BurgerRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -14,10 +16,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get"=>[
             'status' => Response::HTTP_OK,
-            'normalization_context' => ['groups' => ['read:simple']]
+            'normalization_context' => ['groups' => ['bg:r:simple']]
         ],
         "post"=>[
-            'denormalization_context' => ['groups' => ['write']],
+            'denormalization_context' => ['groups' => ['bg:write']],
             'normalization_context' => ['groups' => ['read:all']],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressource"
@@ -27,12 +29,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get"=>[
             'status' => Response::HTTP_OK,
-            'normalization_context' => ['groups' => ['read:all']],
+            'normalization_context' => ['groups' => ['bg:r:all']],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressource"
         ],
         "put"=>[
-            'normalization_context' => ['groups' => ['read:all']],
+            'normalization_context' => ['groups' => ['bg:r:all']],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressource"
         ]
@@ -41,39 +43,22 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class Burger extends Produit
 {
 
-    #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read:simple','read:all','write'])]
-    private $categorie;
-
-    #[ORM\ManyToOne(targetEntity: Menus::class, inversedBy: 'bugers')]
-    private $menus;
-
     #[ORM\Column(type: 'boolean')]
-    #[Groups('read:all')]
+    #[Groups(['bg:r:all'])]
     private $isEtat= true;
 
-    public function getCategorie(): ?string
+    #[ORM\OneToMany(mappedBy: 'burger', targetEntity: MenusBurger::class)]
+    private $menusBurgers;
+
+    #[ORM\Column(type: 'float')]
+    #[Groups(['bg:r:all','bg:write'])]
+    private $prix;
+    
+    public function __construct()
     {
-        return $this->categorie;
-    }
-
-    public function setCategorie(string $categorie): self
-    {
-        $this->categorie = $categorie;
-
-        return $this;
-    }
-
-    public function getMenus(): ?Menus
-    {
-        return $this->menus;
-    }
-
-    public function setMenus(?Menus $menus): self
-    {
-        $this->menus = $menus;
-
-        return $this;
+        parent::__construct();
+        $this->menuses = new ArrayCollection();
+        $this->menusBurgers = new ArrayCollection();
     }
 
     public function isIsEtat(): ?bool
@@ -88,4 +73,46 @@ class Burger extends Produit
         return $this;
     }
 
+    /**
+     * @return Collection<int, MenusBurger>
+     */
+    public function getMenusBurgers(): Collection
+    {
+        return $this->menusBurgers;
+    }
+
+    public function addMenusBurger(MenusBurger $menusBurger): self
+    {
+        if (!$this->menusBurgers->contains($menusBurger)) {
+            $this->menusBurgers[] = $menusBurger;
+            $menusBurger->setBurger($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMenusBurger(MenusBurger $menusBurger): self
+    {
+        if ($this->menusBurgers->removeElement($menusBurger)) {
+            // set the owning side to null (unless already changed)
+            if ($menusBurger->getBurger() === $this) {
+                $menusBurger->setBurger(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getPrix(): ?float
+    {
+        return $this->prix;
+    }
+
+    public function setPrix(float $prix): self
+    {
+        $this->prix = $prix;
+
+        return $this;
+    }
+    
 }

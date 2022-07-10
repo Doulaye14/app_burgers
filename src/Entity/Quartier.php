@@ -16,17 +16,18 @@ use Symfony\Component\Serializer\Annotation\Groups;
     collectionOperations:[
         "get"=>[
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups"=>["read:simple"]],
+            "normalization_context" => ["groups"=>["Q:r:simple"]],
         ],
         "post"=>[
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressouce !",
-            "denormalization_context" => ["groups"=>["Q:write"]]
+            "denormalization_context" => ["groups"=>["Q:write"]],
+            "normalization_context" => ["groups"=>["Q:r:p"]]
         ]
     ],
     itemOperations:[
         "get"=>[
-            "normalization_context" => ["groups"=>["read:all"]],
+            "normalization_context" => ["groups"=>["Q:r:all"]],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressouce !",
         ],
@@ -41,22 +42,17 @@ class Quartier
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["read:all"])]
+    #[Groups(["read:all","Q:r:p"])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","read:all","Q:write"])]
+    #[Groups(["Q:r:simple","Q:r:all","Q:write","Q:r:p"])]
     private $nom;
 
     #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'quartiers')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["read:simple","read:all","Q:write"])]
+    #[Groups(["Q:r:simple","Q:r:all","Q:write","Q:r:p"])]
     private $zone;
-
-    #[ORM\OneToMany(mappedBy: 'quartier', targetEntity: Livraison::class)]
-    #[Groups(["read:simple","read:all"])]
-    #[ApiSubresource]
-    private $livraisons;
 
     public function __construct()
     {
@@ -92,33 +88,4 @@ class Quartier
         return $this;
     }
 
-    /**
-     * @return Collection<int, Livraison>
-     */
-    public function getLivraisons(): Collection
-    {
-        return $this->livraisons;
-    }
-
-    public function addLivraison(Livraison $livraison): self
-    {
-        if (!$this->livraisons->contains($livraison)) {
-            $this->livraisons[] = $livraison;
-            $livraison->setQuartier($this);
-        }
-
-        return $this;
-    }
-
-    public function removeLivraison(Livraison $livraison): self
-    {
-        if ($this->livraisons->removeElement($livraison)) {
-            // set the owning side to null (unless already changed)
-            if ($livraison->getQuartier() === $this) {
-                $livraison->setQuartier(null);
-            }
-        }
-
-        return $this;
-    }
 }

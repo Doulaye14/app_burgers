@@ -41,31 +41,29 @@ class Zone
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["read:all","Q:write"])]
+    #[Groups(["read:all","Q:r:all","Q:write","Q:r:p"])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","read:all","write"])]
+    #[Groups(["read:simple","read:all","write","Q:r:p"])]
     private $nom;
 
     #[ORM\Column(type: 'float')]
     #[Groups(["read:simple","read:all","write"])]
     private $prixLivraison;
 
-    #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Commande::class)]
-    #[ApiSubresource]
-    #[Groups(["read:all"])]
-    private $commandes;
-
     #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Quartier::class)]
     #[ApiSubresource]
     #[Groups(["read:all"])]
     private $quartiers;
 
+    #[ORM\ManyToMany(targetEntity: Livraison::class, mappedBy: 'zones')]
+    private $livraisons;
+
     public function __construct()
     {
-        $this->commandes = new ArrayCollection();
         $this->quartiers = new ArrayCollection();
+        $this->livraisons = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -98,36 +96,6 @@ class Zone
     }
 
     /**
-     * @return Collection<int, Commande>
-     */
-    public function getCommandes(): Collection
-    {
-        return $this->commandes;
-    }
-
-    public function addCommande(Commande $commande): self
-    {
-        if (!$this->commandes->contains($commande)) {
-            $this->commandes[] = $commande;
-            $commande->setZone($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCommande(Commande $commande): self
-    {
-        if ($this->commandes->removeElement($commande)) {
-            // set the owning side to null (unless already changed)
-            if ($commande->getZone() === $this) {
-                $commande->setZone(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
      * @return Collection<int, Quartier>
      */
     public function getQuartiers(): Collection
@@ -152,6 +120,33 @@ class Zone
             if ($quartier->getZone() === $this) {
                 $quartier->setZone(null);
             }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Livraison>
+     */
+    public function getLivraisons(): Collection
+    {
+        return $this->livraisons;
+    }
+
+    public function addLivraison(Livraison $livraison): self
+    {
+        if (!$this->livraisons->contains($livraison)) {
+            $this->livraisons[] = $livraison;
+            $livraison->addZone($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLivraison(Livraison $livraison): self
+    {
+        if ($this->livraisons->removeElement($livraison)) {
+            $livraison->removeZone($this);
         }
 
         return $this;

@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -18,7 +19,12 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 #[ORM\DiscriminatorColumn(name:"role",type:"string")]
 #[ORM\DiscriminatorMap(["gestionnaire"=>"Gestionnaire","client"=>"Client","livreur"=>"Livreur"])]
 #[ApiResource(
-    collectionOperations:["get","post"],
+    collectionOperations:[
+        "get",
+        "post"=>[
+            "denormalization_context" => ["groups" => ["u:write"]],
+        ]
+    ],
     itemOperations:["get","put"]
 )]
 
@@ -27,15 +33,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["read:simple","write","read:all","M:write"])]
+    #[Groups(["read:simple","write","read:all","M:write","u:r:all"])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(["read:all","write","read:simple"])]
+    #[Groups(["read:all","write","read:simple","u:r:all"])]
     protected $email;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(["read:all","read:simple"])]
+    #[Groups(["read:all","read:simple","u:r:all"])]
     protected $roles = [];
 
     #[ORM\Column(type: 'string')]
@@ -46,15 +52,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     protected $plainPassword;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all"])]
+    #[Groups(["read:simple","write","read:all","u:r:all"])]
     protected $prenom;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all",])]
+    #[Groups(["read:simple","write","read:all","u:r:all"])]
     protected $nom;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Produit::class)]
-    #[Groups(["read:simple","read:all",])]
+    #[Groups(["read:simple","write","read:all",])]
+    #[ApiSubresource]
     private $produits;
 
     public function __construct()
@@ -97,7 +104,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
         $roles []= "ROLE_VISITEUR";
-
         return array_unique($roles);
     }
 
@@ -205,4 +211,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    
 }

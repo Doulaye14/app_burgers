@@ -35,6 +35,7 @@ security:
         - { path: ^/api$, roles: PUBLIC_ACCESS } # Allows accessing the Swagger UI
         - { path: ^/api/register/client, roles: PUBLIC_ACCESS }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        # - { path: ^/api/users.json, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

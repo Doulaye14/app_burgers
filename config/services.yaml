@@ -23,5 +23,13 @@ services:
     App\EventSubscriber\GestionnaireSubscriber:
         tags:
             - { name: doctrine.event_listener, event: prePersist}
+
+    App\DataProvider\CatalogueDataProvider:
+        tags: 
+            - { name: 'api_platform.collection_data_provider', priority: 2 }
+
+    App\DataPersister\CommandeDataPersister: ~
+        # Uncomment only if autoconfiguration is disabled
+        tags: [ 'api_platform.data_persister' ]
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

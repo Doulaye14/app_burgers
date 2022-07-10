@@ -9,6 +9,7 @@ use App\Repository\BoissonRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: BoissonRepository::class)]
 #[ApiResource(
@@ -37,70 +38,46 @@ use Symfony\Component\Serializer\Annotation\Groups;
 class Boisson extends Produit
 {
 
-    #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write"])]
-    private $taille;
-
-    #[ORM\ManyToOne(targetEntity: Menus::class, inversedBy: 'boissons')]
-    private $menus;
-
-    #[ORM\ManyToMany(targetEntity: Taille::class, mappedBy: 'boissons')]
-    private $tailles;
+    #[ORM\OneToMany(mappedBy: 'boisson', targetEntity: TailleBoisson::class, cascade:['persist'])]
+    #[Groups(["write"])]
+    #[SerializedName("Tailles")]
+    private $tailleBoissons;
 
     public function __construct()
     {
         parent::__construct();
-        $this->tailles = new ArrayCollection();
-    }
-
-    public function getTaille(): ?string
-    {
-        return $this->taille;
-    }
-
-    public function setTaille(string $taille): self
-    {
-        $this->taille = $taille;
-
-        return $this;
-    }
-
-    public function getMenus(): ?Menus
-    {
-        return $this->menus;
-    }
-
-    public function setMenus(?Menus $menus): self
-    {
-        $this->menus = $menus;
-
-        return $this;
+        $this->tailleBoissons = new ArrayCollection();
     }
 
     /**
-     * @return Collection<int, Taille>
+     * @return Collection<int, TailleBoisson>
      */
-    public function getTailles(): Collection
+    public function getTailleBoissons(): Collection
     {
-        return $this->tailles;
+        return $this->tailleBoissons;
     }
 
-    public function addTaille(Taille $taille): self
+    public function addTailleBoisson(TailleBoisson $tailleBoisson): self
     {
-        if (!$this->tailles->contains($taille)) {
-            $this->tailles[] = $taille;
-            $taille->addBoisson($this);
+        if (!$this->tailleBoissons->contains($tailleBoisson)) {
+            $this->tailleBoissons[] = $tailleBoisson;
+            $tailleBoisson->setBoisson($this);
         }
 
         return $this;
     }
 
-    public function removeTaille(Taille $taille): self
+    public function removeTailleBoisson(TailleBoisson $tailleBoisson): self
     {
-        if ($this->tailles->removeElement($taille)) {
-            $taille->removeBoisson($this);
+        if ($this->tailleBoissons->removeElement($tailleBoisson)) {
+            // set the owning side to null (unless already changed)
+            if ($tailleBoisson->getBoisson() === $this) {
+                $tailleBoisson->setBoisson(null);
+            }
         }
 
         return $this;
     }
+
+
 }

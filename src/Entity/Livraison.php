@@ -54,13 +54,14 @@ class Livraison
     #[Groups(["read:simple","read:all","L:write"])]
     private $commandes;
 
-    #[ORM\ManyToOne(targetEntity: Quartier::class, inversedBy: 'livraisons')]
+    #[ORM\ManyToMany(targetEntity: Zone::class, inversedBy: 'livraisons')]
     #[Groups(["read:simple","read:all","L:write"])]
-    private $quartier;
+    private $zones;
 
     public function __construct()
     {
         $this->commandes = new ArrayCollection();
+        $this->zones = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -110,14 +111,26 @@ class Livraison
         return $this;
     }
 
-    public function getQuartier(): ?Quartier
+    /**
+     * @return Collection<int, Zone>
+     */
+    public function getZones(): Collection
     {
-        return $this->quartier;
+        return $this->zones;
     }
 
-    public function setQuartier(?Quartier $quartier): self
+    public function addZone(Zone $zone): self
     {
-        $this->quartier = $quartier;
+        if (!$this->zones->contains($zone)) {
+            $this->zones[] = $zone;
+        }
+
+        return $this;
+    }
+
+    public function removeZone(Zone $zone): self
+    {
+        $this->zones->removeElement($zone);
 
         return $this;
     }

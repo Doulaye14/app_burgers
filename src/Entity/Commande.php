@@ -7,26 +7,33 @@ use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\Response;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ApiResource(
     collectionOperations:[
         "get"=>[
             "status"=> Response::HTTP_OK,
-            "normalization_context"=>["groups" => ["read:simple"]]
+            "normalization_context"=>["groups" => ["c:r:simple"]],
         ],
         "post"=>[
-            "denormalization_context"=>["groups" => ["C:write"]]
+            "denormalization_context"=>["groups" => ["c:write"]],
+            "security" => "is_granted('ROLE_CLIENT')",
+            "message_security" => "Vous n'avez le droit !"
         ]
     ],
     itemOperations:[
         "get"=>[
             "status"=> Response::HTTP_OK,
-            "normalization_context"=>["groups" => "read:all"]
+            "normalization_context"=>["groups" => "c:r:all"]
         ],
-        "put"
+        "put"=>[
+            "security" => "is_granted(['ROLE_CLIENT','ROLE_GESTIONNAIRE'])",
+            "message_security" => "Vous n'avez le droit !"
+        ]
     ]
 )]
 class Commande
@@ -34,41 +41,45 @@ class Commande
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["read:all"])]
+    #[Groups(["c:r:all"])]
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(["read:all","read:simple","C:write"])]
+    #[Groups(["c:r:all","c:r:simple"])]
     private $prixTotal;
 
     #[ORM\Column(type: 'date')]
-    #[Groups(["read:all","read:simple","C:write"])]
+    #[Groups(["c:r:all","c:r:simple"])]
     private $date;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:all","read:simple","C:write"])]
-    private $status;
+    #[Groups(["c:r:all","c:r:simple"])]
+    private $status = "EN COURS";
 
     #[ORM\ManyToOne(targetEntity: Livraison::class, inversedBy: 'commandes')]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(["c:r:all","c:r:simple"])]
     private $livraison;
 
-    #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'commandes')]
-    private $zone;
-
     #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'commandes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(["c:r:all","c:r:simple"])]    
     private $gestionnaire;
 
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["c:r:all","c:r:simple"])]
     private $client;
 
-    #[ORM\ManyToMany(targetEntity: Produit::class, inversedBy: 'commandes')]
-    private $produits;
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class, cascade:["persist"])]
+    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[SerializedName("Produits")]
+    private $ligneDeCommandes;
 
     public function __construct()
     {
         $this->produits = new ArrayCollection();
+        $this->ligneDeCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -124,18 +135,6 @@ class Commande
         return $this;
     }
 
-    public function getZone(): ?Zone
-    {
-        return $this->zone;
-    }
-
-    public function setZone(?Zone $zone): self
-    {
-        $this->zone = $zone;
-
-        return $this;
-    }
-
     public function getGestionnaire(): ?Gestionnaire
     {
         return $this->gestionnaire;
@@ -161,26 +160,33 @@ class Commande
     }
 
     /**
-     * @return Collection<int, Produit>
+     * @return Collection<int, LigneDeCommande>
      */
-    public function getProduits(): Collection
+    public function getLigneDeCommandes(): Collection
     {
-        return $this->produits;
+        return $this->ligneDeCommandes;
     }
 
-    public function addProduit(Produit $produit): self
+    public function addLigneDeCommande(LigneDeCommande $ligneDeCommande): self
     {
-        if (!$this->produits->contains($produit)) {
-            $this->produits[] = $produit;
+        if (!$this->ligneDeCommandes->contains($ligneDeCommande)) {
+            $this->ligneDeCommandes[] = $ligneDeCommande;
+            $ligneDeCommande->setCommande($this);
         }
 
         return $this;
     }
 
-    public function removeProduit(Produit $produit): self
+    public function removeLigneDeCommande(LigneDeCommande $ligneDeCommande): self
     {
-        $this->produits->removeElement($produit);
+        if ($this->ligneDeCommandes->removeElement($ligneDeCommande)) {
+            // set the owning side to null (unless already changed)
+            if ($ligneDeCommande->getCommande() === $this) {
+                $ligneDeCommande->setCommande(null);
+            }
+        }
 
         return $this;
     }
+
 }

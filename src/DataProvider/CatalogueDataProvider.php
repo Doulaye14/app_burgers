@@ -8,7 +8,7 @@ use App\Repository\BurgerRepository;
 use ApiPlatform\Core\DataProvider\RestrictedDataProviderInterface;
 use ApiPlatform\Core\DataProvider\ContextAwareCollectionDataProviderInterface;
 
-class CatalogueProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface{
+class CatalogueDataProvider implements ContextAwareCollectionDataProviderInterface, RestrictedDataProviderInterface{
     
     public function __construct(MenusRepository $menusRepo, BurgerRepository $burgerRepo)
         {
@@ -20,11 +20,7 @@ class CatalogueProvider implements ContextAwareCollectionDataProviderInterface, 
      * []
      */
     public function getCollection(string $resourceClass, string $operationName = null, array $context = []){
-        $catalogue = [];
-        $catalogue['menus'] = $this->menusRepo->findAll();
-        $catalogue['bugers'] = $this->burgerRepo->findAll();
-        dd($catalogue);
-        return $catalogue;
+        return $context = [$this->menusRepo->findAll(),$this->burgerRepo->findAll() ];
     }
 
     public function supports(string $resourceClass, string $operationName = null, array $context = []): bool{

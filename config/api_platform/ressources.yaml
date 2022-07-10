@@ -1,0 +1,7 @@
+App\Entity\Menus:
+    collectionsOperations:
+        get: ~
+        post_menus:
+            method: POST
+            path: /menus2
+            controller: App\Controller\MenusController

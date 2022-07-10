@@ -25,6 +25,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         "post"=>[
             "path" => "/register/gestionnaire",
             "denormalization_context" => ["groups" => ["write"]],
+            "normalization_context" => ["groups" => ["u:r:all"]],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressource"
         ]

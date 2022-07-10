@@ -4,6 +4,10 @@ namespace App\EventSubscriber;
 
 use App\Entity\Menus;
 use App\Entity\Burger;
+use App\Entity\Frites;
+use App\Entity\Boisson;
+use App\Entity\Commande;
+use App\Entity\PortionFrites;
 use Doctrine\ORM\Events;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -39,8 +43,15 @@ class GestionnaireSubscriber implements EventSubscriberInterface
 
     public function prePersist(LifecycleEventArgs $args)
     {
-        if (($args->getObject() instanceof Burger) or ($args->getObject() instanceof Menus)) {
+        if (
+            ($args->getObject() instanceof Burger) or 
+            ($args->getObject() instanceof Menus) or 
+            ($args->getObject() instanceof PortionFrites) or
+            ($args->getObject() instanceof Boisson)
+        ){
             $args->getObject()->setUser($this->getUser());
+        }elseif($args->getObject() instanceof Commande){
+            $args->getObject()->setClient($this->getUser());
         }
     }
     

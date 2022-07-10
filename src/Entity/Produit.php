@@ -14,36 +14,48 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\InheritanceType("JOINED")]
 #[ORM\DiscriminatorColumn(name:"type",type:"string")]
-#[ORM\DiscriminatorMap(["burger"=>"Burger","menus"=>"Menus","frites"=>"Frites","boisson"=>"Boisson"])]
+#[ORM\DiscriminatorMap(["burger"=>"Burger","menus"=>"Menus","portionfrites"=>"PortionFrites","boisson"=>"Boisson"])]
 #[ApiResource]
 class Produit
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["M:p:write"])]
+    #[Groups(
+        [
+            "T:write","M:p:r:all",
+            "M:r:all","M:write",
+            "c:r:all","c:write",
+            "bg:r:simple","bg:r:all",
+            "F:r:all","F:r:simple","F:write"
+        ]
+    )]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['read:simple','read:all','write',"M:write"])]
+    #[Groups(
+        [
+            'read:simple','read:all','write',
+            "M:r:simple","M:r:all",
+            "bg:r:simple","bg:r:all","bg:write",
+            "F:r:all","F:r:simple","F:write"
+        ]
+    )]
     private $nom;
-
-    #[ORM\Column(type: 'float')]
-    #[Groups(['read:simple','read:all','write',"M:write"])]
-    private $prix;
-
-    #[ORM\ManyToMany(targetEntity: Commande::class, mappedBy: 'produits')]
-    #[Groups('read:all',"read:simple")]
-    #[ApiSubresource]
-    private $commandes;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'produits')]
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
+    #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LigneDeCommande::class)]
+    private $ligneDeCommandes;
+
+    #[ORM\Column(type: 'blob', nullable: true)]
+    private $image;
+
     public function __construct()
     {
-        $this->commandes = new ArrayCollection();
+        $this->ligneDeCommandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -63,45 +75,6 @@ class Produit
         return $this;
     }
 
-    public function getPrix(): ?float
-    {
-        return $this->prix;
-    }
-
-    public function setPrix(float $prix): self
-    {
-        $this->prix = $prix;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Commande>
-     */
-    public function getCommandes(): Collection
-    {
-        return $this->commandes;
-    }
-
-    public function addCommande(Commande $commande): self
-    {
-        if (!$this->commandes->contains($commande)) {
-            $this->commandes[] = $commande;
-            $commande->addProduit($this);
-        }
-
-        return $this;
-    }
-
-    public function removeCommande(Commande $commande): self
-    {
-        if ($this->commandes->removeElement($commande)) {
-            $commande->removeProduit($this);
-        }
-
-        return $this;
-    }
-
     public function getUser(): ?User
     {
         return $this->user;
@@ -113,4 +86,48 @@ class Produit
 
         return $this;
     }
+
+    /**
+     * @return Collection<int, LigneDeCommande>
+     */
+    public function getLigneDeCommandes(): Collection
+    {
+        return $this->ligneDeCommandes;
+    }
+
+
+    public function addLigneDeCommande(LigneDeCommande $ligneDeCommande): self
+    {
+        if (!$this->ligneDeCommandes->contains($ligneDeCommande)) {
+            $this->ligneDeCommandes[] = $ligneDeCommande;
+            $ligneDeCommande->setProduit($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLigneDeCommande(LigneDeCommande $ligneDeCommande): self
+    {
+        if ($this->ligneDeCommandes->removeElement($ligneDeCommande)) {
+            // set the owning side to null (unless already changed)
+            if ($ligneDeCommande->getProduit() === $this) {
+                $ligneDeCommande->setProduit(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    public function setImage($image): self
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
 }
