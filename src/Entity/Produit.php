@@ -36,7 +36,7 @@ class Produit
     #[Groups(
         [
             'read:simple','read:all','write',
-            "M:r:simple","M:r:all",
+            "M:r:simple","M:r:all",'por:write',
             "bg:r:simple","bg:r:all","bg:write",
             "F:r:all","F:r:simple","F:write"
         ]
@@ -52,6 +52,17 @@ class Produit
 
     #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LigneDeCommande::class)]
     private $ligneDeCommandes;
+
+    #[ORM\Column(type: 'float', nullable: true)]
+    #[Groups(
+        [
+            'read:simple','read:all','write',
+            "M:r:simple","M:r:all",'por:write',"M:p:r:all",
+            "bg:r:simple","bg:r:all","bg:write",
+            "F:r:all","F:r:simple","F:write"
+        ]
+    )]
+    private $prix;
 
     public function __construct()
     {
@@ -125,6 +136,18 @@ class Produit
                 $ligneDeCommande->setProduit(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPrix(): ?float
+    {
+        return $this->prix;
+    }
+
+    public function setPrix(?float $prix): self
+    {
+        $this->prix = $prix;
 
         return $this;
     }

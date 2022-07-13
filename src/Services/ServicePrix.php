@@ -34,24 +34,24 @@ class ServicePrix {
             $prix += $menusPortion->getPortionFrites()->getPrix()*
                      $menusPortion->getQuantity();
         }
-        foreach ($menus->getMenusTailleBoissons() as $menusTaille) {
+        foreach ($menus->getMenusTailles() as $menusTaille) {
             $prix += $menusTaille->getTaille()->getPrix()*
                      $menusTaille->getQuantity();
         }
         return $prix;
     }
 
-    public function getPrixCommande(Commande $commande){
-        $prix = 0;
-        foreach ($commande->getLigneDeCommandes() as $ligneCom) {
-            $produit = $ligneCom->getProduit();
-            dd($produit);
-            if ($produit instanceof Burger) {
-                $burger = $this->burgerRepo->find($produit->getId());
-                $prix += $burger->getPrix()*$ligneCom->getQuantity();
-            }
-        }
-        return $prix;
-    }
+    // public function getPrixCommande(Commande $commande){
+    //     $prix = 0;
+    //     foreach ($commande->getLigneDeCommandes() as $ligneCom) {
+    //         $produit = $ligneCom->getProduit();
+    //         dd($produit);
+    //         if ($produit instanceof Burger) {
+    //             $burger = $this->burgerRepo->find($produit->getId());
+    //             $prix += $burger->getPrix()*$ligneCom->getQuantity();
+    //         }
+    //     }
+    //     return $prix;
+    // }
 
 }

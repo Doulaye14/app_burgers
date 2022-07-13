@@ -38,42 +38,39 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class Boisson extends Produit
 {
 
-    #[ORM\OneToMany(mappedBy: 'boisson', targetEntity: TailleBoisson::class, cascade:['persist'])]
+
+    #[ORM\ManyToMany(targetEntity: Taille::class, mappedBy: 'boissons')]
     #[Groups(["write"])]
-    #[SerializedName("Tailles")]
-    private $tailleBoissons;
+    private $tailles;
 
     public function __construct()
     {
         parent::__construct();
-        $this->tailleBoissons = new ArrayCollection();
+        $this->tailles = new ArrayCollection();
     }
 
     /**
-     * @return Collection<int, TailleBoisson>
+     * @return Collection<int, Taille>
      */
-    public function getTailleBoissons(): Collection
+    public function getTailles(): Collection
     {
-        return $this->tailleBoissons;
+        return $this->tailles;
     }
 
-    public function addTailleBoisson(TailleBoisson $tailleBoisson): self
+    public function addTaille(Taille $taille): self
     {
-        if (!$this->tailleBoissons->contains($tailleBoisson)) {
-            $this->tailleBoissons[] = $tailleBoisson;
-            $tailleBoisson->setBoisson($this);
+        if (!$this->tailles->contains($taille)) {
+            $this->tailles[] = $taille;
+            $taille->addBoisson($this);
         }
 
         return $this;
     }
 
-    public function removeTailleBoisson(TailleBoisson $tailleBoisson): self
+    public function removeTaille(Taille $taille): self
     {
-        if ($this->tailleBoissons->removeElement($tailleBoisson)) {
-            // set the owning side to null (unless already changed)
-            if ($tailleBoisson->getBoisson() === $this) {
-                $tailleBoisson->setBoisson(null);
-            }
+        if ($this->tailles->removeElement($taille)) {
+            $taille->removeBoisson($this);
         }
 
         return $this;

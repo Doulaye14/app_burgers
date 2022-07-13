@@ -41,7 +41,10 @@ class Zone
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["read:all","Q:r:all","Q:write","Q:r:p"])]
+    #[Groups([
+        "read:all","Q:r:all","Q:write","Q:r:p",
+        "c:r:all","c:r:simple","c:write"
+    ])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
@@ -57,13 +60,13 @@ class Zone
     #[Groups(["read:all"])]
     private $quartiers;
 
-    #[ORM\ManyToMany(targetEntity: Livraison::class, mappedBy: 'zones')]
-    private $livraisons;
+    #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Commande::class)]
+    private $commandes;
 
     public function __construct()
     {
         $this->quartiers = new ArrayCollection();
-        $this->livraisons = new ArrayCollection();
+        $this->commandes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -126,29 +129,33 @@ class Zone
     }
 
     /**
-     * @return Collection<int, Livraison>
+     * @return Collection<int, Commande>
      */
-    public function getLivraisons(): Collection
+    public function getCommandes(): Collection
     {
-        return $this->livraisons;
+        return $this->commandes;
     }
 
-    public function addLivraison(Livraison $livraison): self
+    public function addCommande(Commande $commande): self
     {
-        if (!$this->livraisons->contains($livraison)) {
-            $this->livraisons[] = $livraison;
-            $livraison->addZone($this);
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes[] = $commande;
+            $commande->setZone($this);
         }
 
         return $this;
     }
 
-    public function removeLivraison(Livraison $livraison): self
+    public function removeCommande(Commande $commande): self
     {
-        if ($this->livraisons->removeElement($livraison)) {
-            $livraison->removeZone($this);
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getZone() === $this) {
+                $commande->setZone(null);
+            }
         }
-
+        
         return $this;
     }
+
 }

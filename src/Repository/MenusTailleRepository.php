@@ -2,26 +2,26 @@
 
 namespace App\Repository;
 
-use App\Entity\MenusTailleBoisson;
+use App\Entity\MenusTaille;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<MenusTailleBoisson>
+ * @extends ServiceEntityRepository<MenusTaille>
  *
- * @method MenusTailleBoisson|null find($id, $lockMode = null, $lockVersion = null)
- * @method MenusTailleBoisson|null findOneBy(array $criteria, array $orderBy = null)
- * @method MenusTailleBoisson[]    findAll()
- * @method MenusTailleBoisson[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
+ * @method MenusTaille|null find($id, $lockMode = null, $lockVersion = null)
+ * @method MenusTaille|null findOneBy(array $criteria, array $orderBy = null)
+ * @method MenusTaille[]    findAll()
+ * @method MenusTaille[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
-class MenusTailleBoissonRepository extends ServiceEntityRepository
+class MenusTailleRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, MenusTailleBoisson::class);
+        parent::__construct($registry, MenusTaille::class);
     }
 
-    public function add(MenusTailleBoisson $entity, bool $flush = false): void
+    public function add(MenusTaille $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +30,7 @@ class MenusTailleBoissonRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(MenusTailleBoisson $entity, bool $flush = false): void
+    public function remove(MenusTaille $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +40,7 @@ class MenusTailleBoissonRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return MenusTailleBoisson[] Returns an array of MenusTailleBoisson objects
+//     * @return MenusTaille[] Returns an array of MenusTaille objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +54,7 @@ class MenusTailleBoissonRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?MenusTailleBoisson
+//    public function findOneBySomeField($value): ?MenusTaille
 //    {
 //        return $this->createQueryBuilder('m')
 //            ->andWhere('m.exampleField = :val')

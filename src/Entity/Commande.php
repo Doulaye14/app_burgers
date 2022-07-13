@@ -7,10 +7,10 @@ use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\Response;
-use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Validator\Constraints\Date;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ApiResource(
@@ -70,6 +70,14 @@ class Commande
     #[Groups(["c:r:all","c:r:simple","c:write"])]
     #[SerializedName("Produits")]
     private $ligneDeCommandes;
+
+    #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'commandes')]
+    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    private $zone;
+
+    #[ORM\Column(type: 'date')]
+    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    private $createAt;
 
     public function __construct()
     {
@@ -167,6 +175,30 @@ class Commande
                 $ligneDeCommande->setCommande(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getZone(): ?Zone
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?Zone $zone): self
+    {
+        $this->zone = $zone;
+
+        return $this;
+    }
+
+    public function getCreateAt(): ?\DateTimeInterface
+    {
+        return $this->createAt;
+    }
+
+    public function setCreateAt(\DateTimeInterface $createAt): self
+    {
+        $this->createAt = $createAt;
 
         return $this;
     }

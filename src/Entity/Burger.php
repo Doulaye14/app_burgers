@@ -49,10 +49,6 @@ class Burger extends Produit
 
     #[ORM\OneToMany(mappedBy: 'burger', targetEntity: MenusBurger::class)]
     private $menusBurgers;
-
-    #[ORM\Column(type: 'float')]
-    #[Groups(['bg:r:all','bg:write'])]
-    private $prix;
     
     public function __construct()
     {
@@ -99,18 +95,6 @@ class Burger extends Produit
                 $menusBurger->setBurger(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getPrix(): ?float
-    {
-        return $this->prix;
-    }
-
-    public function setPrix(float $prix): self
-    {
-        $this->prix = $prix;
 
         return $this;
     }

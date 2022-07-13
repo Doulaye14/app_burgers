@@ -32,9 +32,6 @@ class Taille
     #[Groups(["T:write"])]
     private $libelle;
 
-    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: TailleBoisson::class)]
-    private $tailleBoissons;
-
     #[ORM\Column(type: 'float')]
     #[Groups(["T:write"])]
     private $prix;
@@ -42,13 +39,16 @@ class Taille
     #[ORM\Column(type: 'integer', nullable: true)]
     private $QuantityStok;
 
-    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: MenusTailleBoisson::class)]
-    private $menusTailleBoissons;
+    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: MenusTaille::class)]
+    private $menusTailles;
+
+    #[ORM\ManyToMany(targetEntity: Boisson::class, inversedBy: 'tailles')]
+    private $boissons;
 
     public function __construct()
     {
-        $this->tailleBoissons = new ArrayCollection();
-        $this->menusTailleBoissons = new ArrayCollection();
+        $this->menusTailles = new ArrayCollection();
+        $this->boissons = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -64,36 +64,6 @@ class Taille
     public function setLibelle(string $libelle): self
     {
         $this->libelle = $libelle;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, TailleBoisson>
-     */
-    public function getTailleBoissons(): Collection
-    {
-        return $this->tailleBoissons;
-    }
-
-    public function addTailleBoisson(TailleBoisson $tailleBoisson): self
-    {
-        if (!$this->tailleBoissons->contains($tailleBoisson)) {
-            $this->tailleBoissons[] = $tailleBoisson;
-            $tailleBoisson->setTaille($this);
-        }
-
-        return $this;
-    }
-
-    public function removeTailleBoisson(TailleBoisson $tailleBoisson): self
-    {
-        if ($this->tailleBoissons->removeElement($tailleBoisson)) {
-            // set the owning side to null (unless already changed)
-            if ($tailleBoisson->getTaille() === $this) {
-                $tailleBoisson->setTaille(null);
-            }
-        }
 
         return $this;
     }
@@ -122,32 +92,57 @@ class Taille
         return $this;
     }
 
+
     /**
-     * @return Collection<int, MenusTailleBoisson>
+     * @return Collection<int, MenusTaille>
      */
-    public function getMenusTailleBoissons(): Collection
+    public function getMenusTailles(): Collection
     {
-        return $this->menusTailleBoissons;
+        return $this->menusTailles;
     }
 
-    public function addMenusTailleBoisson(MenusTailleBoisson $menusTailleBoisson): self
+    public function addMenusTaille(MenusTaille $menusTaille): self
     {
-        if (!$this->menusTailleBoissons->contains($menusTailleBoisson)) {
-            $this->menusTailleBoissons[] = $menusTailleBoisson;
-            $menusTailleBoisson->setTaille($this);
+        if (!$this->menusTailles->contains($menusTaille)) {
+            $this->menusTailles[] = $menusTaille;
+            $menusTaille->setTaille($this);
         }
 
         return $this;
     }
 
-    public function removeMenusTailleBoisson(MenusTailleBoisson $menusTailleBoisson): self
+    public function removeMenusTaille(MenusTaille $menusTaille): self
     {
-        if ($this->menusTailleBoissons->removeElement($menusTailleBoisson)) {
+        if ($this->menusTailles->removeElement($menusTaille)) {
             // set the owning side to null (unless already changed)
-            if ($menusTailleBoisson->getTaille() === $this) {
-                $menusTailleBoisson->setTaille(null);
+            if ($menusTaille->getTaille() === $this) {
+                $menusTaille->setTaille(null);
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Boisson>
+     */
+    public function getBoissons(): Collection
+    {
+        return $this->boissons;
+    }
+
+    public function addBoisson(Boisson $boisson): self
+    {
+        if (!$this->boissons->contains($boisson)) {
+            $this->boissons[] = $boisson;
+        }
+
+        return $this;
+    }
+
+    public function removeBoisson(Boisson $boisson): self
+    {
+        $this->boissons->removeElement($boisson);
 
         return $this;
     }
