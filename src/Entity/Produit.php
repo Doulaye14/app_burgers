@@ -47,11 +47,11 @@ class Produit
     #[ORM\JoinColumn(nullable: false)]
     private $user;
 
-    #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LigneDeCommande::class)]
-    private $ligneDeCommandes;
-
     #[ORM\Column(type: 'blob', nullable: true)]
     private $image;
+
+    #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LigneDeCommande::class)]
+    private $ligneDeCommandes;
 
     public function __construct()
     {
@@ -87,6 +87,18 @@ class Produit
         return $this;
     }
 
+    public function getImage()
+    {
+        return $this->image;
+    }
+
+    public function setImage($image): self
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, LigneDeCommande>
      */
@@ -94,7 +106,6 @@ class Produit
     {
         return $this->ligneDeCommandes;
     }
-
 
     public function addLigneDeCommande(LigneDeCommande $ligneDeCommande): self
     {
@@ -114,18 +125,6 @@ class Produit
                 $ligneDeCommande->setProduit(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getImage()
-    {
-        return $this->image;
-    }
-
-    public function setImage($image): self
-    {
-        $this->image = $image;
 
         return $this;
     }

@@ -14,6 +14,11 @@ class LigneDeCommande
     #[ORM\Column(type: 'integer')]
     private $id;
 
+    #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'ligneDeCommandes')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    private $produit;
+
     #[ORM\Column(type: 'float')]
     #[Groups(["c:r:all","c:r:simple"])]
     private $prix;
@@ -23,41 +28,13 @@ class LigneDeCommande
     private $quantity;
 
     #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'ligneDeCommandes')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private $commande;
 
-    #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'ligneDeCommandes')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
-    private $produit;
 
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getProduit(): ?Produit
-    {
-        return $this->produit;
-    }
-
-    public function setProduit(?Produit $produit): self
-    {
-        $this->produit = $produit;
-
-        return $this;
-    }
-
-    public function getCommande(): ?Commande
-    {
-        return $this->commande;
-    }
-
-    public function setCommande(?Commande $commande): self
-    {
-        $this->commande = $commande;
-
-        return $this;
     }
 
     public function getQuantity(): ?float
@@ -82,5 +59,28 @@ class LigneDeCommande
         return $this;
     }
 
+    public function getCommande(): ?Commande
+    {
+        return $this->commande;
+    }
+
+    public function setCommande(?Commande $commande): self
+    {
+        $this->commande = $commande;
+
+        return $this;
+    }
+
+    public function getProduit(): ?Produit
+    {
+        return $this->produit;
+    }
+
+    public function setProduit(?Produit $produit): self
+    {
+        $this->produit = $produit;
+
+        return $this;
+    }
     
 }

@@ -26,14 +26,7 @@ class CommandeDataPersister implements DataPersisterInterface
     }
 
     public function persist($data){
-        if ($this->service->prixCommande($data)) {
-            $data->setPrixTotal($this->service->prixCommande($data));
-            $data->eraseCredentials();
-        }
-        $ligneDeCommande = new LigneDeCommande();
-        $ligneDeCommande->setCommande($data);
-        $ligneDeCommande->setPrix($ligneDeCommande->getPrix()*$ligneDeCommande->getQuantity());
-        // $this->entityManager->persist($ligneDeCommande);
+        $data->setPrixTotal($this->service->getPrixCommande($data));
         $this->entityManager->persist($data);
         $this->entityManager->flush();
     }
@@ -42,6 +35,5 @@ class CommandeDataPersister implements DataPersisterInterface
         $this->entityManager->remove($data);
         $this->entityManager->flush();
     }
-
-
+    
 }

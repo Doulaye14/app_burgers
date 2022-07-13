@@ -31,8 +31,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
             "normalization_context"=>["groups" => "c:r:all"]
         ],
         "put"=>[
-            "security" => "is_granted(['ROLE_CLIENT','ROLE_GESTIONNAIRE'])",
-            "message_security" => "Vous n'avez le droit !"
+            
         ]
     ]
 )]
@@ -47,10 +46,6 @@ class Commande
     #[ORM\Column(type: 'integer')]
     #[Groups(["c:r:all","c:r:simple"])]
     private $prixTotal;
-
-    #[ORM\Column(type: 'date')]
-    #[Groups(["c:r:all","c:r:simple"])]
-    private $date;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(["c:r:all","c:r:simple"])]
@@ -71,14 +66,13 @@ class Commande
     #[Groups(["c:r:all","c:r:simple"])]
     private $client;
 
-    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class, cascade:["persist"])]
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class, cascade:['persist'])]
     #[Groups(["c:r:all","c:r:simple","c:write"])]
     #[SerializedName("Produits")]
     private $ligneDeCommandes;
 
     public function __construct()
     {
-        $this->produits = new ArrayCollection();
         $this->ligneDeCommandes = new ArrayCollection();
     }
 
@@ -95,18 +89,6 @@ class Commande
     public function setPrixTotal(int $prixTotal): self
     {
         $this->prixTotal = $prixTotal;
-
-        return $this;
-    }
-
-    public function getDate(): ?\DateTimeInterface
-    {
-        return $this->date;
-    }
-
-    public function setDate(\DateTimeInterface $date): self
-    {
-        $this->date = $date;
 
         return $this;
     }
