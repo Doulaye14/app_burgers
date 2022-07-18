@@ -5,3 +5,8 @@ App\Entity\Menus:
             method: POST
             path: /menus2
             controller: App\Controller\MenusController
+
+App\Entity\Commande:
+    attributes:
+        ligneDeCommandes:
+            max_depth: 2

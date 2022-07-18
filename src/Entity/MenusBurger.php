@@ -42,7 +42,6 @@ class MenusBurger
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
-
         return $this;
     }
 
@@ -54,7 +53,6 @@ class MenusBurger
     public function setMenu(?Menus $menu): self
     {
         $this->menu = $menu;
-
         return $this;
     }
 

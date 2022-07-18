@@ -9,6 +9,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 
@@ -30,39 +31,50 @@ class Produit
             "F:r:all","F:r:simple","F:write"
         ]
     )]
-    private $id;
+    protected $id;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(
         [
-            'read:simple','read:all','write',
-            "M:r:simple","M:r:all",'por:write',
+            "read:simple","read:all","write",
+            "M:r:simple","M:r:all","por:write",
             "bg:r:simple","bg:r:all","bg:write",
             "F:r:all","F:r:simple","F:write"
         ]
     )]
-    private $nom;
+    protected $nom;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'produits')]
     #[ORM\JoinColumn(nullable: false)]
-    private $user;
+    protected $user;
 
     #[ORM\Column(type: 'blob', nullable: true)]
-    private $image;
-
-    #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LigneDeCommande::class)]
-    private $ligneDeCommandes;
+    protected $image;
+    
+    #[Groups(
+        [
+            "read:simple","read:all","write",
+            "M:r:simple","M:r:all","por:write",
+            "bg:r:simple","bg:r:all","bg:write",
+            "F:r:all","F:r:simple","F:write"
+        ]
+    )]
+    #[SerializedName("image")]
+    protected $plaineImage;
 
     #[ORM\Column(type: 'float', nullable: true)]
     #[Groups(
         [
-            'read:simple','read:all','write',
-            "M:r:simple","M:r:all",'por:write',"M:p:r:all",
+            "read:simple","read:all","write",
+            "M:r:simple","M:r:all","por:write","M:p:r:all",
             "bg:r:simple","bg:r:all","bg:write",
             "F:r:all","F:r:simple","F:write"
         ]
     )]
-    private $prix;
+    protected $prix;
+
+    #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LigneDeCommande::class)]
+    protected $ligneDeCommandes;
 
     public function __construct()
     {
@@ -110,6 +122,18 @@ class Produit
         return $this;
     }
 
+    public function getPrix(): ?float
+    {
+        return $this->prix;
+    }
+
+    public function setPrix(?float $prix): self
+    {
+        $this->prix = $prix;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, LigneDeCommande>
      */
@@ -140,16 +164,24 @@ class Produit
         return $this;
     }
 
-    public function getPrix(): ?float
+
+    /**
+     * Get the value of plaineImage
+     */ 
+    public function getPlaineImage()
     {
-        return $this->prix;
+        return $this->plaineImage;
     }
 
-    public function setPrix(?float $prix): self
+    /**
+     * Set the value of plaineImage
+     *
+     * @return  self
+     */ 
+    public function setPlaineImage($plaineImage)
     {
-        $this->prix = $prix;
+        $this->plaineImage = $plaineImage;
 
         return $this;
     }
-
 }

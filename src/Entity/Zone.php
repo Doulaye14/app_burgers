@@ -61,12 +61,18 @@ class Zone
     private $quartiers;
 
     #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Commande::class)]
+    #[ApiSubresource]
+    #[Groups(["L:r:simple","L:r:all","L:write"])]
     private $commandes;
+
+    #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Livraison::class)]
+    private $livraisons;
 
     public function __construct()
     {
         $this->quartiers = new ArrayCollection();
         $this->commandes = new ArrayCollection();
+        $this->livraisons = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -155,6 +161,36 @@ class Zone
             }
         }
         
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Livraison>
+     */
+    public function getLivraisons(): Collection
+    {
+        return $this->livraisons;
+    }
+
+    public function addLivraison(Livraison $livraison): self
+    {
+        if (!$this->livraisons->contains($livraison)) {
+            $this->livraisons[] = $livraison;
+            $livraison->setZone($this);
+        }
+
+        return $this;
+    }
+
+    public function removeLivraison(Livraison $livraison): self
+    {
+        if ($this->livraisons->removeElement($livraison)) {
+            // set the owning side to null (unless already changed)
+            if ($livraison->getZone() === $this) {
+                $livraison->setZone(null);
+            }
+        }
+
         return $this;
     }
 

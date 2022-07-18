@@ -4,7 +4,6 @@ namespace App\EventSubscriber;
 
 use App\Entity\Menus;
 use App\Entity\Burger;
-use App\Entity\Frites;
 use App\Entity\Boisson;
 use App\Entity\Commande;
 use App\Entity\PortionFrites;
@@ -14,7 +13,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class GestionnaireSubscriber implements EventSubscriberInterface
+class UserSubscriber implements EventSubscriberInterface
 {
     private ?TokenInterface $token;
     
@@ -50,6 +49,7 @@ class GestionnaireSubscriber implements EventSubscriberInterface
             ($args->getObject() instanceof Boisson)
         ){
             $args->getObject()->setUser($this->getUser());
+            $args->getObject()->setImage(file_get_contents($args->getObject()->getPlaineImage()));
         }elseif($args->getObject() instanceof Commande){
             $args->getObject()->setClient($this->getUser());
         }

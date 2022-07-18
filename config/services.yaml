@@ -20,7 +20,7 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
-    App\EventSubscriber\GestionnaireSubscriber:
+    App\EventSubscriber\UserSubscriber:
         tags:
             - { name: doctrine.event_listener, event: prePersist}
 

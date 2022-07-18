@@ -4,7 +4,6 @@ namespace App\DataPersister;
 
 use App\Entity\Commande;
 use App\Services\ServicePrix;
-use Doctrine\ORM\EntityManager;
 use ApiPlatform\Core\DataPersister\DataPersisterInterface;
 use App\Entity\LigneDeCommande;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +25,9 @@ class CommandeDataPersister implements DataPersisterInterface
     }
 
     public function persist($data){
+        foreach ($data->getLigneDeCommandes() as $ligneCom) {
+            $ligneCom->setPrix($ligneCom->getProduit()->getPrix()*$ligneCom->getQuantity());
+        }
         $data->setPrixTotal($this->service->getPrixCommande($data));
         $this->entityManager->persist($data);
         $this->entityManager->flush();

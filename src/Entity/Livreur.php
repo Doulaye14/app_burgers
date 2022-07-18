@@ -53,11 +53,15 @@ class Livreur extends User
     #[ORM\OneToMany(mappedBy: 'livreur', targetEntity: Livraison::class)]
     private $livraisons;
 
+    #[ORM\OneToMany(mappedBy: 'livreur', targetEntity: Commande::class)]
+    private $commandes;
+
     public function __construct()
     {
         $this->livraisons = new ArrayCollection();
         $this->matriculeMoto = "MOTO-".date_format(new DateTime, 'i-s');
         $this->roles [] = "ROLE_LIVREUR";
+        $this->commandes = new ArrayCollection();
     }
 
     public function getEtat(): ?string
@@ -108,6 +112,36 @@ class Livreur extends User
             // set the owning side to null (unless already changed)
             if ($livraison->getLivreur() === $this) {
                 $livraison->setLivreur(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Commande>
+     */
+    public function getCommandes(): Collection
+    {
+        return $this->commandes;
+    }
+
+    public function addCommande(Commande $commande): self
+    {
+        if (!$this->commandes->contains($commande)) {
+            $this->commandes[] = $commande;
+            $commande->setLivreur($this);
+        }
+
+        return $this;
+    }
+
+    public function removeCommande(Commande $commande): self
+    {
+        if ($this->commandes->removeElement($commande)) {
+            // set the owning side to null (unless already changed)
+            if ($commande->getLivreur() === $this) {
+                $commande->setLivreur(null);
             }
         }
 

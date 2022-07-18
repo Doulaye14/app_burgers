@@ -9,8 +9,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Serializer\Annotation\SerializedName;
-use Symfony\Component\Validator\Constraints\Date;
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ApiResource(
@@ -21,8 +21,8 @@ use Symfony\Component\Validator\Constraints\Date;
         ],
         "post"=>[
             "denormalization_context"=>["groups" => ["c:write"]],
-            "security" => "is_granted('ROLE_CLIENT')",
-            "message_security" => "Vous n'avez le droit !"
+            "security"=>"is_granted('ROLE_CLIENT')",
+            "security_message"=>"Vous n'avez pas d'accès"
         ]
     ],
     itemOperations:[
@@ -40,7 +40,7 @@ class Commande
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["c:r:all"])]
+    #[Groups(["c:r:all","L:r:simple","L:r:all","L:write"])]
     private $id;
 
     #[ORM\Column(type: 'integer')]
@@ -50,11 +50,6 @@ class Commande
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(["c:r:all","c:r:simple"])]
     private $status = "EN COURS";
-
-    #[ORM\ManyToOne(targetEntity: Livraison::class, inversedBy: 'commandes')]
-    #[ORM\JoinColumn(nullable: true)]
-    #[Groups(["c:r:all","c:r:simple"])]
-    private $livraison;
 
     #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: true)]
@@ -66,10 +61,10 @@ class Commande
     #[Groups(["c:r:all","c:r:simple"])]
     private $client;
 
-    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class, cascade:['persist'])]
+    #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'commandes')]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(["c:r:all","c:r:simple","c:write"])]
-    #[SerializedName("Produits")]
-    private $ligneDeCommandes;
+    private $livreur;
 
     #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'commandes')]
     #[Groups(["c:r:all","c:r:simple","c:write"])]
@@ -78,6 +73,12 @@ class Commande
     #[ORM\Column(type: 'date')]
     #[Groups(["c:r:all","c:r:simple","c:write"])]
     private $createAt;
+
+    #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class, cascade:['persist'])]
+    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[SerializedName("Produits")]
+    #[MaxDepth(2)]
+    private $ligneDeCommandes;
 
     public function __construct()
     {
@@ -113,18 +114,6 @@ class Commande
         return $this;
     }
 
-    public function getLivraison(): ?Livraison
-    {
-        return $this->livraison;
-    }
-
-    public function setLivraison(?Livraison $livraison): self
-    {
-        $this->livraison = $livraison;
-
-        return $this;
-    }
-
     public function getGestionnaire(): ?Gestionnaire
     {
         return $this->gestionnaire;
@@ -145,6 +134,30 @@ class Commande
     public function setClient(?Client $client): self
     {
         $this->client = $client;
+
+        return $this;
+    }
+
+    public function getZone(): ?Zone
+    {
+        return $this->zone;
+    }
+
+    public function setZone(?Zone $zone): self
+    {
+        $this->zone = $zone;
+
+        return $this;
+    }
+
+    public function getCreateAt(): ?\DateTimeInterface
+    {
+        return $this->createAt;
+    }
+
+    public function setCreateAt(\DateTimeInterface $createAt): self
+    {
+        $this->createAt = $createAt;
 
         return $this;
     }
@@ -179,26 +192,14 @@ class Commande
         return $this;
     }
 
-    public function getZone(): ?Zone
+    public function getLivreur(): ?Livreur
     {
-        return $this->zone;
+        return $this->livreur;
     }
 
-    public function setZone(?Zone $zone): self
+    public function setLivreur(?Livreur $livreur): self
     {
-        $this->zone = $zone;
-
-        return $this;
-    }
-
-    public function getCreateAt(): ?\DateTimeInterface
-    {
-        return $this->createAt;
-    }
-
-    public function setCreateAt(\DateTimeInterface $createAt): self
-    {
-        $this->createAt = $createAt;
+        $this->livreur = $livreur;
 
         return $this;
     }

@@ -2,21 +2,36 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Core\Annotation\ApiResource;
-use App\Repository\TailleRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\TailleRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\HttpFoundation\Response;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: TailleRepository::class)]
 #[ApiResource(
     collectionOperations:[
         "get"=>[
-
+            "status"=>Response::HTTP_OK,
+            "normalization_context" => ["groups" => ["T:r:simple"]]
         ],
         "post"=>[
-            "denormalization_context" => ["groups" => ["T:write"]]
+            "denormalization_context" => ["groups"=>["T:write"]],
+            "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            "security_message" => "Vous n'avez pas accès à cette ressource"
+        ]
+    ],
+    itemOperations:[
+        "get"=>[
+            "normalization_context" => ["groups" => ["T:r:all"]],
+            "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            "security_message" => "Vous n'avez pas accès à cette ressource"
+        ],
+        "put"=>[
+            "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            "security_message" => "Vous n'avez pas accès à cette ressource"
         ]
     ]
 )]
@@ -25,30 +40,28 @@ class Taille
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["M:r:all","M:write","write"])]
+    #[Groups([
+        "T:r:simple","T:r:all",
+        "read:simple","read:all","write",
+        "M:r:all","M:write","M:p:r:all"
+    ])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["T:write"])]
+    #[Groups(["T:r:simple","T:r:all","T:write","M:r:all","M:write"])]
     private $libelle;
 
-    #[ORM\Column(type: 'float')]
-    #[Groups(["T:write"])]
-    private $prix;
-
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private $QuantityStok;
+    #[ORM\OneToMany(mappedBy: 'taille', targetEntity: TailleBoisson::class)]
+    #[Groups(["M:r:all","M:write"])]
+    private $tailleBoissons;
 
     #[ORM\OneToMany(mappedBy: 'taille', targetEntity: MenusTaille::class)]
     private $menusTailles;
 
-    #[ORM\ManyToMany(targetEntity: Boisson::class, inversedBy: 'tailles')]
-    private $boissons;
-
     public function __construct()
     {
+        $this->tailleBoissons = new ArrayCollection();
         $this->menusTailles = new ArrayCollection();
-        $this->boissons = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -68,30 +81,35 @@ class Taille
         return $this;
     }
 
-    public function getPrix(): ?float
+    /**
+     * @return Collection<int, TailleBoisson>
+     */
+    public function getTailleBoissons(): Collection
     {
-        return $this->prix;
+        return $this->tailleBoissons;
     }
 
-    public function setPrix(float $prix): self
+    public function addTailleBoisson(TailleBoisson $tailleBoisson): self
     {
-        $this->prix = $prix;
+        if (!$this->tailleBoissons->contains($tailleBoisson)) {
+            $this->tailleBoissons[] = $tailleBoisson;
+            $tailleBoisson->setTaille($this);
+        }
 
         return $this;
     }
 
-    public function getQuantityStok(): ?int
+    public function removeTailleBoisson(TailleBoisson $tailleBoisson): self
     {
-        return $this->QuantityStok;
-    }
-
-    public function setQuantityStok(int $QuantityStok): self
-    {
-        $this->QuantityStok = $QuantityStok;
+        if ($this->tailleBoissons->removeElement($tailleBoisson)) {
+            // set the owning side to null (unless already changed)
+            if ($tailleBoisson->getTaille() === $this) {
+                $tailleBoisson->setTaille(null);
+            }
+        }
 
         return $this;
     }
-
 
     /**
      * @return Collection<int, MenusTaille>
@@ -119,30 +137,6 @@ class Taille
                 $menusTaille->setTaille(null);
             }
         }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Boisson>
-     */
-    public function getBoissons(): Collection
-    {
-        return $this->boissons;
-    }
-
-    public function addBoisson(Boisson $boisson): self
-    {
-        if (!$this->boissons->contains($boisson)) {
-            $this->boissons[] = $boisson;
-        }
-
-        return $this;
-    }
-
-    public function removeBoisson(Boisson $boisson): self
-    {
-        $this->boissons->removeElement($boisson);
 
         return $this;
     }

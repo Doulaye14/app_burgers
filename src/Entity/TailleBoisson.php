@@ -3,46 +3,48 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\TailleBoissonRepository;
 use Doctrine\Common\Collections\Collection;
-use App\Repository\LigneDeCommandeRepository;
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\SerializedName;
 
-#[ORM\Entity(repositoryClass: LigneDeCommandeRepository::class)]
-
-class LigneDeCommande
+#[ORM\Entity(repositoryClass: TailleBoissonRepository::class)]
+#[ApiResource]
+class TailleBoisson
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups([
+        "read:simple","read:all","write",
+        "c:r:all","c:r:simple","c:write",
+        "M:r:all","M:write"
+    ])]
     private $id;
 
-    #[ORM\Column(type: 'float')]
-    #[Groups(["c:r:all","c:r:simple"])]
-    private $prix;
-
-    #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'ligneDeCommandes')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
-    private $produit;
-
-    #[ORM\Column(type: 'float')]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(["read:simple","read:all","write"])]
     private $quantity;
 
-    #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'ligneDeCommandes')]
-    #[ORM\JoinColumn(nullable: true)]
-    private $commande;
+    #[ORM\Column(type: 'float')]
+    #[Groups(["read:simple","read:all","write"])]
+    private $prix;
 
-    #[ORM\OneToMany(mappedBy: 'ligneDeCommande', targetEntity: LigneTaille::class, cascade:['persist'])]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
-    #[SerializedName("Boissons")]
+    #[ORM\ManyToOne(targetEntity: Boisson::class, inversedBy: 'tailleBoissons')]
+    #[ORM\JoinColumn(nullable: false)]
+    private $boisson;
+
+    #[ORM\ManyToOne(targetEntity: Taille::class, inversedBy: 'tailleBoissons')]
+    #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["read:simple","read:all","write"])]
+    private $taille;
+
+    #[ORM\OneToMany(mappedBy: 'tailleBoisson', targetEntity: LigneTaille::class)]
     private $ligneTailles;
 
     public function __construct()
     {
-        // $this->prix = $this->prixLigne();
         $this->ligneTailles = new ArrayCollection();
     }
 
@@ -51,14 +53,15 @@ class LigneDeCommande
         return $this->id;
     }
 
-    public function getQuantity(): ?float
+    public function getQuantity(): ?int
     {
         return $this->quantity;
     }
 
-    public function setQuantity(float $quantity): self
+    public function setQuantity(?int $quantity): self
     {
         $this->quantity = $quantity;
+
         return $this;
     }
 
@@ -70,36 +73,32 @@ class LigneDeCommande
     public function setPrix(float $prix): self
     {
         $this->prix = $prix;
-        return $this;
-    }
-
-    public function getProduit(): ?Produit
-    {
-        return $this->produit;
-    }
-
-    public function setProduit(?Produit $produit): self
-    {
-        $this->produit = $produit;
 
         return $this;
     }
 
-    public function getCommande(): ?Commande
+    public function getBoisson(): ?Boisson
     {
-        return $this->commande;
+        return $this->boisson;
     }
 
-    public function setCommande(?Commande $commande): self
+    public function setBoisson(?Boisson $boisson): self
     {
-        $this->commande = $commande;
+        $this->boisson = $boisson;
 
         return $this;
     }
 
-    public function prixLigne(){
-        $price = $this->getProduit()->getPrix()*$this->getQuantity();
-        return $price;
+    public function getTaille(): ?Taille
+    {
+        return $this->taille;
+    }
+
+    public function setTaille(?Taille $taille): self
+    {
+        $this->taille = $taille;
+
+        return $this;
     }
 
     /**
@@ -114,7 +113,7 @@ class LigneDeCommande
     {
         if (!$this->ligneTailles->contains($ligneTaille)) {
             $this->ligneTailles[] = $ligneTaille;
-            $ligneTaille->setLigneDeCommande($this);
+            $ligneTaille->setTailleBoisson($this);
         }
 
         return $this;
@@ -124,12 +123,11 @@ class LigneDeCommande
     {
         if ($this->ligneTailles->removeElement($ligneTaille)) {
             // set the owning side to null (unless already changed)
-            if ($ligneTaille->getLigneDeCommande() === $this) {
-                $ligneTaille->setLigneDeCommande(null);
+            if ($ligneTaille->getTailleBoisson() === $this) {
+                $ligneTaille->setTailleBoisson(null);
             }
         }
 
         return $this;
     }
-    
 }

@@ -24,7 +24,7 @@ class MenusPersister implements DataPersisterInterface
 
     public function persist($data){
         if ($this->prixMenus->getPrixMenus($data)) {
-            $data->setPrix($this->prixMenus->getPrixMenus($data));
+            // $data->setPrix($this->prixMenus->getPrixMenus($data));
             // $data->eraseCredentials();
         }
         $this->entityManager->persist($data);

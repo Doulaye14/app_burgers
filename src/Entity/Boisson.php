@@ -20,12 +20,14 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
         ],
         "post"=>[
             "denormalization_context" => ["groups"=>["write"]],
+            "normalization_context" => ["groups" => ["read:simple"]],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressource"
         ]
     ],
     itemOperations:[
         "get"=>[
+            "normalization_context" => ["groups" => ["read:all"]],
             "security" => "is_granted('ROLE_GESTIONNAIRE')",
             "security_message" => "Vous n'avez pas accès à cette ressource"
         ],
@@ -38,43 +40,44 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 class Boisson extends Produit
 {
 
-
-    #[ORM\ManyToMany(targetEntity: Taille::class, mappedBy: 'boissons')]
-    #[Groups(["write"])]
-    private $tailles;
+    #[ORM\OneToMany(mappedBy: 'boisson', targetEntity: TailleBoisson::class, cascade:['persist'])]
+    #[Groups(["read:simple","read:all","write"])]
+    #[SerializedName("Boisson")]
+    private $tailleBoissons;
 
     public function __construct()
     {
         parent::__construct();
-        $this->tailles = new ArrayCollection();
+        $this->tailleBoissons = new ArrayCollection();
     }
 
     /**
-     * @return Collection<int, Taille>
+     * @return Collection<int, TailleBoisson>
      */
-    public function getTailles(): Collection
+    public function getTailleBoissons(): Collection
     {
-        return $this->tailles;
+        return $this->tailleBoissons;
     }
 
-    public function addTaille(Taille $taille): self
+    public function addTailleBoisson(TailleBoisson $tailleBoisson): self
     {
-        if (!$this->tailles->contains($taille)) {
-            $this->tailles[] = $taille;
-            $taille->addBoisson($this);
+        if (!$this->tailleBoissons->contains($tailleBoisson)) {
+            $this->tailleBoissons[] = $tailleBoisson;
+            $tailleBoisson->setBoisson($this);
         }
 
         return $this;
     }
 
-    public function removeTaille(Taille $taille): self
+    public function removeTailleBoisson(TailleBoisson $tailleBoisson): self
     {
-        if ($this->tailles->removeElement($taille)) {
-            $taille->removeBoisson($this);
+        if ($this->tailleBoissons->removeElement($tailleBoisson)) {
+            // set the owning side to null (unless already changed)
+            if ($tailleBoisson->getBoisson() === $this) {
+                $tailleBoisson->setBoisson(null);
+            }
         }
 
         return $this;
     }
-
-
 }

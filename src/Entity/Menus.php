@@ -44,7 +44,8 @@ class Menus extends Produit
     protected $nom;
 
     #[Groups(["M:r:simple","M:r:all","M:write",])]
-    protected $image;
+    #[SerializedName("image")]
+    protected $plaineImage;
 
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenusBurger::class, cascade:['persist'])]
     #[Groups(["M:r:all","M:write","M:p:r:all"])]
@@ -130,7 +131,6 @@ class Menus extends Produit
             $this->menusPortionFrites[] = $menusPortionFrite;
             $menusPortionFrite->setMenus($this);
         }
-
         return $this;
     }
 
@@ -175,6 +175,5 @@ class Menus extends Produit
 
         return $this;
     }
-
     
 }
