@@ -28,7 +28,7 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
     itemOperations:[
         "get"=>[
             "status"=> Response::HTTP_OK,
-            "normalization_context"=>["groups" => "c:r:all"]
+            // "normalization_context"=>["groups" => "c:r:all"]
         ],
         "put"=>[
             

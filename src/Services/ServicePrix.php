@@ -77,6 +77,7 @@ class ServicePrix {
         if($commande->getZone()){
             $prix += $commande->getZone()->getPrixLivraison();
         }
+        // dd($prix);
         return $prix;
     }
 
