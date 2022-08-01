@@ -48,19 +48,19 @@ class Menus extends Produit
     protected $plaineImage;
 
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenusBurger::class, cascade:['persist'])]
-    #[Groups(["M:r:all","M:write","M:p:r:all"])]
+    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
     #[ApiSubresource]
     #[SerializedName('Burgers')]
     private $menusBurgers;
 
     #[ORM\OneToMany(mappedBy: 'menus', targetEntity: MenusProtionFrites::class, cascade:['persist'])]
-    #[Groups(["M:r:all","M:write","M:p:r:all"])]
+    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
     #[ApiSubresource]
     #[SerializedName('Frites')]
     private $menusPortionFrites;
 
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenusTaille::class, cascade:['persist'])]
-    #[Groups(["M:r:all","M:write","M:p:r:all"])]
+    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
     #[ApiSubresource]
     #[SerializedName('Boissons')]
     private $menusTailles;

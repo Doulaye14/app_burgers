@@ -1,4 +1,6 @@
 api_platform:
+    formats: 
+        json: ['application/json']
     title: 'Une API REST Symfony'
     description: 'Une API Symfony pour une application vente de Burgers'
     version: '1.0.0'

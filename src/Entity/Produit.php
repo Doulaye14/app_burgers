@@ -25,7 +25,7 @@ class Produit
     #[Groups(
         [
             "T:write","M:p:r:all",
-            "M:r:all","M:write",
+            "M:r:all","M:r:simple","M:write",
             "c:r:all","c:write",
             "bg:r:simple","bg:r:all",
             "F:r:all","F:r:simple","F:write"
@@ -49,6 +49,7 @@ class Produit
     protected $user;
 
     #[ORM\Column(type: 'blob', nullable: true)]
+    #[Groups(["bg:r:simple","bg:r:all","M:r:simple","M:r:all"])]
     protected $image;
     
     #[Groups(
@@ -110,9 +111,9 @@ class Produit
         return $this;
     }
 
-    public function getImage()
+    public function getImage(): ?string
     {
-        return $this->image;
+        return (is_resource($this->image)?utf8_encode(base64_encode(stream_get_contents($this->image))):$this->image); 
     }
 
     public function setImage($image): self

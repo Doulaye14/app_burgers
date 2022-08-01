@@ -30,8 +30,8 @@ use Symfony\Component\Serializer\Annotation\Groups;
         "get"=>[
             'status' => Response::HTTP_OK,
             'normalization_context' => ['groups' => ['bg:r:all']],
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressource"
+            // "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            // "security_message" => "Vous n'avez pas accès à cette ressource"
         ],
         "put"=>[
             'normalization_context' => ['groups' => ['bg:r:all']],

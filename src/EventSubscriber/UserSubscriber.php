@@ -48,6 +48,7 @@ class UserSubscriber implements EventSubscriberInterface
             ($args->getObject() instanceof PortionFrites) or
             ($args->getObject() instanceof Boisson)
         ){
+            // dd($args->getObject());
             $args->getObject()->setUser($this->getUser());
             $args->getObject()->setImage(file_get_contents($args->getObject()->getPlaineImage()));
         }elseif($args->getObject() instanceof Commande){
