@@ -16,36 +16,31 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get"=>[
             'status' => Response::HTTP_OK,
-            'normalization_context' => ['groups' => ['bg:r:simple']]
+            'normalization_context' => ['groups' => ['burger:r:s']]
         ],
         "post"=>[
-            'denormalization_context' => ['groups' => ['bg:write']],
-            'normalization_context' => ['groups' => ['read:all']],
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressource"
+            'denormalization_context' => ['groups' => ['burger:w']],
+            // "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            // "security_message" => "Vous n'avez pas accès à cette ressource"
         ]
     ],
     itemOperations:
     [
         "get"=>[
             'status' => Response::HTTP_OK,
-            'normalization_context' => ['groups' => ['bg:r:all']],
+            'normalization_context' => ['groups' => ['burger:r:a']],
             // "security" => "is_granted('ROLE_GESTIONNAIRE')",
             // "security_message" => "Vous n'avez pas accès à cette ressource"
         ],
         "put"=>[
-            'normalization_context' => ['groups' => ['bg:r:all']],
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressource"
+            'normalization_context' => ['groups' => ['burger:r:a']],
+            // "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            // "security_message" => "Vous n'avez pas accès à cette ressource"
         ]
     ]
 )]
 class Burger extends Produit
 {
-
-    #[ORM\Column(type: 'boolean')]
-    #[Groups(['bg:r:all'])]
-    private $isEtat= true;
 
     #[ORM\OneToMany(mappedBy: 'burger', targetEntity: MenusBurger::class)]
     private $menusBurgers;
@@ -55,18 +50,6 @@ class Burger extends Produit
         parent::__construct();
         $this->menuses = new ArrayCollection();
         $this->menusBurgers = new ArrayCollection();
-    }
-
-    public function isIsEtat(): ?bool
-    {
-        return $this->isEtat;
-    }
-
-    public function setIsEtat(bool $isEtat): self
-    {
-        $this->isEtat = $isEtat;
-
-        return $this;
     }
 
     /**

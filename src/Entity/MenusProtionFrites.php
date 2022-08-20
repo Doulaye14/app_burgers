@@ -13,15 +13,15 @@ class MenusProtionFrites
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["M:r:all","M:write",])]
+    #[Groups(["Menus:r:s","produit:r:a"])]
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(["M:r:simple","M:r:all","M:write",])]
+    #[Groups(["Menus:r:s","Menus:w","produit:r:a"])]
     private $quantity;
 
     #[ORM\ManyToOne(targetEntity: PortionFrites::class, inversedBy: 'menusPortionFrites')]
-    #[Groups(["M:r:simple","M:r:all","M:write",])]
+    #[Groups(["Menus:r:s","Menus:w","produit:r:a"])]
     private $portionFrites;
 
     #[ORM\ManyToOne(targetEntity: Menus::class, inversedBy: 'menusPortionFrites')]

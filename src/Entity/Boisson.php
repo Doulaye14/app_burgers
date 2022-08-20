@@ -16,24 +16,18 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
     collectionOperations:[
         "get"=>[
             "status"=>Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["read:simple"]]
+            "normalization_context" => ["groups" => ["boisson:r:s"]]
         ],
         "post"=>[
-            "denormalization_context" => ["groups"=>["write"]],
-            "normalization_context" => ["groups" => ["read:simple"]],
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressource"
+            "denormalization_context" => ["groups"=>["boisson:w"]],
         ]
     ],
     itemOperations:[
         "get"=>[
-            "normalization_context" => ["groups" => ["read:all"]],
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressource"
+            "normalization_context" => ["groups" => ["boisson:r:a"]],
         ],
         "put"=>[
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressource"
+            "denormalization_context" => ["groups"=>["boisson:w"]],
         ]
     ]
 )]
@@ -41,8 +35,8 @@ class Boisson extends Produit
 {
 
     #[ORM\OneToMany(mappedBy: 'boisson', targetEntity: TailleBoisson::class, cascade:['persist'])]
-    #[Groups(["read:simple","read:all","write"])]
     #[SerializedName("Boisson")]
+    #[Groups(["boisson:w"])]
     private $tailleBoissons;
 
     public function __construct()

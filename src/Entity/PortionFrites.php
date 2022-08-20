@@ -12,18 +12,22 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ApiResource(
     collectionOperations:[
-        'get'=>[
+        "get"=>[
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["por:r:simple"]]
+            "normalization_context" => ["groups" => ["portion:r:s"]]
         ],
-        'post'=>[
-            'denormalization_context' => ['groups' => ['por:write']],
-
+        "post"=>[
+            "denormalization_context" => ["groups" => ["portion:w"]],
         ]
     ],
     itemOperations:[
-        'get',
-        'put'
+        "get"=>[
+            "status" => Response::HTTP_OK,
+            "normalization_context" => ["groups" => ["portion:r:a"]]
+        ],
+        "put"=>[
+            "denormalization_context" => ["groups" => ["portion:w"]],
+        ]
     ]
 )]
 #[ORM\Entity(repositoryClass: PortionFritesRepository::class)]
@@ -64,7 +68,6 @@ class PortionFrites extends Produit
                 $menusPortionFrite->setPortionFrites(null);
             }
         }
-
         return $this;
     }
 

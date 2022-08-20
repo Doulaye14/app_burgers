@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiSubresource;
-use App\Controller\MenusController;
 use App\Repository\MenusRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -18,51 +16,47 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
     collectionOperations:[
         "get"=>[
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => "M:r:simple"]
+            "normalization_context" => ["groups" => "Menus:r:s"]
         ],
         "post" =>[
-            "denormalization_context"=>["groups"=>["M:write"]],
-            "normalization_context" =>["groups" => ["M:p:r:all"]]
+            "denormalization_context"=>["groups"=>"Menus:w"],
         ],
-        "post_menus" =>[
-            "method" => "post",
-            "path" => "/menus2",
-            "deserialize"=>false,
-            "controller" => MenusController::class
-        ]
     ],
     itemOperations:[
         "get" => [
-            "normalization_context" => ["groups" => "M:r:all"]
+            "normalization_context" => ["groups" => "Menus:r:a"]
         ],
         "put"
     ]
-)]
+)
+]
+
 class Menus extends Produit
 {
-    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
+
+    #[Groups(["Menus:w"])]
     protected $nom;
 
-    #[Groups(["M:r:simple","M:r:all","M:write",])]
+    #[Groups(["Menus:w",])]
     #[SerializedName("image")]
     protected $plaineImage;
 
+    #[Groups(["Menus:w","Menus:w","produit:r:a"])]
+    protected $type;
+
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenusBurger::class, cascade:['persist'])]
-    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
-    #[ApiSubresource]
-    #[SerializedName('Burgers')]
+    #[Groups(["Menus:w","produit:r:a","Menus:r:a"])]
+    // #[SerializedName('Burgers')]
     private $menusBurgers;
 
     #[ORM\OneToMany(mappedBy: 'menus', targetEntity: MenusProtionFrites::class, cascade:['persist'])]
-    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
-    #[ApiSubresource]
-    #[SerializedName('Frites')]
+    #[Groups(["Menus:w","produit:r:a","Menus:r:a"])]
+    // #[SerializedName('Frites')]
     private $menusPortionFrites;
 
     #[ORM\OneToMany(mappedBy: 'menu', targetEntity: MenusTaille::class, cascade:['persist'])]
-    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
-    #[ApiSubresource]
-    #[SerializedName('Boissons')]
+    #[Groups(["Menus:w","produit:r:a","Menus:r:a"])]
+    // #[SerializedName('Boissons')]
     private $menusTailles;
 
     public function __construct()

@@ -1,6 +1,10 @@
 api_platform:
+    defaults:
+        pagination_enabled: false
     formats: 
         json: ['application/json']
+        jsonld: ['application/ld+json']
+        html: ['text/html']
     title: 'Une API REST Symfony'
     description: 'Une API Symfony pour une application vente de Burgers'
     version: '1.0.0'
@@ -10,3 +14,5 @@ api_platform:
         json: ['application/merge-patch+json']
     swagger:
         versions: [3]
+    eager_loading:
+        max_joins: 100

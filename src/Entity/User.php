@@ -35,31 +35,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'integer')]
     #[Groups([
         "read:simple","write","read:all","M:write","u:r:all",
-        "c:r:all","c:write"
+        "com:r:a","client:w","com:update","client:r:s","client:r:a"
     ])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(["read:all","write","read:simple","u:r:all"])]
+    #[Groups(["read:all","write","read:simple","u:r:all","client:r:s","client:r:a","client:w",])]
     protected $email;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(["read:all","read:simple","u:r:all"])]
+    #[Groups(["read:all","read:simple","u:r:all","client:r:a"])]
     protected $roles = [];
 
     #[ORM\Column(type: 'string')]
     protected $password;
 
     #[SerializedName("password")]
-    #[Groups(["write"])]
+    #[Groups(["write","client:w"])]
     protected $plainPassword;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all","u:r:all"])]
+    #[Groups(["read:simple","write","read:all","u:r:all","com:update","com:r:a","com:r:s","client:r:s","client:r:a","client:w"])]
     protected $prenom;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all","u:r:all"])]
+    #[Groups(["read:simple","write","read:all","u:r:all","com:update","com:r:a","com:r:s","client:r:s","client:r:a","client:w"])]
     protected $nom;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Produit::class)]
@@ -185,13 +185,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Produit>
-     */
-    public function getProduits(): Collection
-    {
-        return $this->produits;
-    }
+    // /**
+    //  * @return Collection<int, Produit>
+    //  */
+    // public function getProduits(): Collection
+    // {
+    //     return $this->produits;
+    // }
 
     public function addProduit(Produit $produit): self
     {

@@ -39,22 +39,23 @@ class ServicePrix {
         foreach ($commande->getLigneDeCommandes() as $ligneCom) {
             $produit = $ligneCom->getProduit();
             if ($produit instanceof Menus) {
-                $tailles = $produit->getMenusTailles();
-                foreach ($tailles as $taille) {
-                    $tailleB = $taille->getTaille();
-                    foreach ($ligneCom->getLigneTailles() as $ligneTaille) {
-                        $tail = $ligneTaille->getTailleBoisson()->getTaille();
-                        if ($tailleB->getId() == $tail->getId()) {
-                            $prix += 
-                                ($this->getPrixMenus($produit)+
-                                $ligneTaille->getTailleBoisson()->getPrix()*
-                                $ligneTaille->getQuantity())*
-                                $ligneCom->getQuantity();
-                        }else{
-                            echo $produit->getNom()." n'a pas une boisson de taille ".$tail->getLibelle();
+                if ($ligneCom->getLigneTailles()) {
+                    $tailles = $produit->getMenusTailles();
+                    foreach ($tailles as $taille) {
+                        $tailleB = $taille->getTaille();
+                        foreach ($ligneCom->getLigneTailles() as $ligneTaille) {
+                            $tail = $ligneTaille->getTailleBoisson()->getTaille();
+                            if ($tailleB->getId() == $tail->getId()) {
+                                $prix += 
+                                    ($this->getPrixMenus($produit)+
+                                    $ligneTaille->getTailleBoisson()->getPrix()*
+                                    $ligneTaille->getQuantity())*
+                                    $ligneCom->getQuantity();
+                            }
                         }
                     }
                 }
+                $prix += $this->getPrixMenus($produit);
             }
             if ($produit instanceof Boisson) {
                 foreach ($produit->getTailleBoissons() as $tailleBoisson) {
@@ -64,8 +65,6 @@ class ServicePrix {
                         if ($taille->getId() == $tail->getId()) {
                             $prix += $ligneTaille->getTailleBoisson()->getPrix()*
                                      $ligneTaille->getQuantity();
-                        }else {
-                            echo "la boisson ".$produit->getNom()." n'a pas la taille ".$tail->getLibelle();
                         }
                     }
                 }
@@ -77,7 +76,7 @@ class ServicePrix {
         if($commande->getZone()){
             $prix += $commande->getZone()->getPrixLivraison();
         }
-        // dd($prix);
+        // dd('Le prix est '.$prix);
         return $prix;
     }
 

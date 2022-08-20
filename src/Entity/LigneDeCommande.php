@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiResource;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\Collection;
 use App\Repository\LigneDeCommandeRepository;
@@ -11,24 +12,34 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: LigneDeCommandeRepository::class)]
 
+#[ApiResource(
+    collectionOperations:[
+        "get",
+        "post" => [
+            "denormalization_context" => ["groups" => "LT:write"],
+            "AbstractObjectNormalizer::ENABLE_MAX_DEPTH"=>true,
+        ]
+    ]
+)]
 class LigneDeCommande
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(["com:r:a","com:r:s","com:update",])]
     private $id;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(["c:r:all","c:r:simple"])]
+    #[Groups(["com:r:a","com:r:s","com:update",])]
     private $prix;
 
-    #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'ligneDeCommandes')]
+    #[ORM\ManyToOne(targetEntity: Produit::class, inversedBy: 'ligneDeCommandes', cascade:['persist'])]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[Groups(["com:r:a","com:r:s","com:write","client:r:a","com:update",])]
     private $produit;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[Groups(["com:r:a","com:r:s","com:write","client:r:a","com:update",])]
     private $quantity;
 
     #[ORM\ManyToOne(targetEntity: Commande::class, inversedBy: 'ligneDeCommandes')]
@@ -36,8 +47,8 @@ class LigneDeCommande
     private $commande;
 
     #[ORM\OneToMany(mappedBy: 'ligneDeCommande', targetEntity: LigneTaille::class, cascade:['persist'])]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
-    #[SerializedName("Boissons")]
+    #[Groups(["com:write",])]
+    // #[SerializedName("Boissons")]
     private $ligneTailles;
 
     public function __construct()

@@ -8,17 +8,19 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MenusBurgerRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    
+)]
 class MenusBurger
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
+    #[Groups(["Menus:r:s","produit:r:a","Menus:r:a"])]
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(["M:r:simple","M:r:all","M:write",])]
+    #[Groups(["Menus:r:s","Menus:w","produit:r:a","Menus:r:a"])]
     private $quantity;
 
     #[ORM\ManyToOne(targetEntity: Menus::class, inversedBy: 'menusBurgers')]
@@ -26,7 +28,7 @@ class MenusBurger
 
     #[ORM\ManyToOne(targetEntity: Burger::class, inversedBy: 'menusBurgers')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["M:r:simple","M:r:all","M:write","M:p:r:all"])]
+    #[Groups(["Menus:r:s","Menus:w","produit:r:a"])]
     private $burger;
 
     public function getId(): ?int
