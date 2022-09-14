@@ -43,27 +43,27 @@ class Zone
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     #[Groups([
-        "read:all","read:simple","Q:r:all","Q:write","Q:r:p",
-        "com:r:a","com:r:s","L:r:simple","L:r:all","L:write","com:update"
+        "lvr:r:a","read:simple","Q:r:all","Q:write","Q:r:p",
+        "com:r:a","com:r:s","L:r:simple","L:r:all","L:write","com:update","user:r:s"
     ])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","read:all","write","Q:r:p","com:r:a","com:r:s","com:update","L:r:simple","L:r:all",])]
+    #[Groups(["read:simple","lvr:r:a","write","Q:r:p","com:r:a","com:r:s","com:update","L:r:simple","L:r:all","user:r:s"])]
     private $nom;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(["read:simple","read:all","write","L:r:simple","L:r:all"])]
+    #[Groups(["read:simple","lvr:r:a","write","L:r:simple","L:r:all"])]
     private $prixLivraison;
 
     #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Quartier::class)]
     #[ApiSubresource]
-    #[Groups(["read:simple","read:all",])]
+    #[Groups(["read:simple"])]
     private $quartiers;
 
     #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Commande::class)]
     #[ApiSubresource]
-    #[Groups(["L:r:simple","L:r:all","L:write","read:simple","read:all"])]
+    #[Groups(["L:r:simple","L:r:all","L:write","read:simple","lvr:r:a","user:r:s"])]
     private $commandes;
 
     #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Livraison::class)]

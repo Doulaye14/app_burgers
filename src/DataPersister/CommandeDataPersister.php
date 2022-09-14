@@ -38,6 +38,7 @@ class CommandeDataPersister implements DataPersisterInterface
             $prixCom += $data->getZone()->getPrixLivraison();
         }
         $data->setPrixTotal($prixCom);
+        $data->setCode($this->service->generateCode());
         // $data->setCreateAt();
         // $data->setClient($this->userRepo->find(1));
         // dd($data);

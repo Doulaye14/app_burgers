@@ -40,17 +40,17 @@ class Livraison
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["L:r:all","L:r:simple"])]
+    #[Groups(["L:r:all","L:r:simple","user:r:s","lvr:r:a"])]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'livraisons')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["L:r:simple","L:r:all","L:write"])]
+    #[Groups(["L:r:simple","L:write"])]
     #[MaxDepth(3)]
     private $livreur;
 
     #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'livraisons')]
-    #[Groups(["L:r:simple","L:r:all","L:write"])]
+    #[Groups(["L:r:simple","L:r:all","L:write","user:r:s","lvr:r:a","L:r:all"])]
     #[MaxDepth(3)]
     private $zone;
 

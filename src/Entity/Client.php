@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -43,16 +45,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
         ]
     ]
 )]
-
+#[ApiFilter(SearchFilter::class, properties: ['email' => 'exact',])]
 class Client extends User
 {
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all","client:r:s","client:r:a","client:w","com:r:a","com:r:s","com:update"])]
+    #[Groups(["read:simple","write","read:all","client:r:s","client:r:a","client:w","com:r:a","com:r:s","com:update","user:r:s","L:r:all"])]
     private $phone;
 
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Commande::class)]
-    #[Groups(["read:all","client:r:a",])]
+    #[Groups(["read:all","client:r:s","client:r:a","user:r:s"])]
     #[ApiSubresource()]
     private $commandes;
 

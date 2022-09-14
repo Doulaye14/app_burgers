@@ -2,10 +2,12 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -33,20 +35,22 @@ use Symfony\Component\Serializer\Annotation\MaxDepth;
         ]
     ]
 )]
+
+#[ApiFilter(SearchFilter::class, properties: ['code' => 'exact'])]
 class Commande
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["com:r:a","com:r:s","read:simple","read:all","L:r:simple","L:r:all","client:r:a"])]
+    #[Groups(["client:r:s","com:r:a","com:r:s","read:simple","read:all","L:r:simple","L:r:all","client:r:a","lvr:r:a"])]
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(["com:r:a","com:r:s","read:simple","read:all","client:r:a"])]
+    #[Groups(["client:r:s","com:r:a","com:r:s","read:simple","read:all","client:r:a","user:r:s","lvr:r:a"])]
     private $prixTotal;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["com:r:a","com:r:s","com:write","read:simple","read:all","L:r:simple","L:r:all","client:r:a"])]
+    #[Groups(["client:r:s","com:r:a","com:r:s","com:write","read:simple","read:all","L:r:simple","L:r:all","client:r:a","user:r:s",])]
     private $status = "EN COURS";
 
     #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'commandes')]
@@ -56,7 +60,7 @@ class Commande
 
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["com:r:a","com:r:s","com:write","read:simple","read:all"])]
+    #[Groups(["com:r:a","com:r:s","com:write","read:simple","read:all","L:r:all"])]
     private $client;
 
     #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'commandes')]
@@ -65,17 +69,21 @@ class Commande
     private $livreur;
 
     #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'commandes')]
-    #[Groups(["com:r:a","com:r:s","com:write",])]
+    #[Groups(["com:r:a","com:r:s","com:write","user:r:s",])]
     private $zone;
 
     #[ORM\Column(type: 'datetime')]
-    #[Groups(["com:r:a","com:r:s","read:simple","read:all","client:r:a",])]
+    #[Groups(["client:r:s","com:r:a","com:r:s","read:simple","read:all","client:r:a","user:r:s","lvr:r:a"])]
     private $createAt;
 
     #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class, cascade:['persist'])]
     #[Groups(["com:r:a","com:r:s","com:write",])]
     #[MaxDepth(4)]
     private $ligneDeCommandes;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(["client:r:s","com:r:a","com:r:s","com:write","read:simple","read:all","L:r:simple","L:r:all","client:r:a","user:r:s",])]
+    private $code;
 
 
     public function __construct()
@@ -199,6 +207,18 @@ class Commande
     public function setLivreur(?Livreur $livreur): self
     {
         $this->livreur = $livreur;
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(?string $code): self
+    {
+        $this->code = $code;
 
         return $this;
     }
