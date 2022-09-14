@@ -19,53 +19,55 @@ use Symfony\Component\Serializer\Annotation\Groups;
             "normalization_context" => ["groups"=>["read:simple"]],
         ],
         "post"=>[
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressouce !",
+            // "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            // "security_message" => "Vous n'avez pas accès à cette ressouce !",
             "denormalization_context" => ["groups"=>["write"]]
         ]
     ],
     itemOperations:[
         "get"=>[
             "normalization_context" => ["groups"=>["read:all"]],
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressouce !",
+            // "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            // "security_message" => "Vous n'avez pas accès à cette ressouce !",
         ],
         "put"=>[
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "security_message" => "Vous n'avez pas accès à cette ressouce !"
+            // "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            // "security_message" => "Vous n'avez pas accès à cette ressouce !"
         ]
     ]
 )]
 class Zone
 {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     #[Groups([
-        "read:all","Q:r:all","Q:write","Q:r:p",
-        "c:r:all","c:r:simple","c:write"
+        "lvr:r:a","read:simple","Q:r:all","Q:write","Q:r:p",
+        "com:r:a","com:r:s","L:r:simple","L:r:all","L:write","com:update","user:r:s"
     ])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","read:all","write","Q:r:p"])]
+    #[Groups(["read:simple","lvr:r:a","write","Q:r:p","com:r:a","com:r:s","com:update","L:r:simple","L:r:all","user:r:s"])]
     private $nom;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(["read:simple","read:all","write"])]
+    #[Groups(["read:simple","lvr:r:a","write","L:r:simple","L:r:all"])]
     private $prixLivraison;
 
     #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Quartier::class)]
     #[ApiSubresource]
-    #[Groups(["read:all"])]
+    #[Groups(["read:simple"])]
     private $quartiers;
 
     #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Commande::class)]
     #[ApiSubresource]
-    #[Groups(["L:r:simple","L:r:all","L:write"])]
+    #[Groups(["L:r:simple","L:r:all","L:write","read:simple","lvr:r:a","user:r:s"])]
     private $commandes;
 
     #[ORM\OneToMany(mappedBy: 'zone', targetEntity: Livraison::class)]
+    #[Groups(["L:write"])]
     private $livraisons;
 
     public function __construct()
@@ -148,19 +150,16 @@ class Zone
             $this->commandes[] = $commande;
             $commande->setZone($this);
         }
-
         return $this;
     }
 
     public function removeCommande(Commande $commande): self
     {
         if ($this->commandes->removeElement($commande)) {
-            // set the owning side to null (unless already changed)
             if ($commande->getZone() === $this) {
                 $commande->setZone(null);
             }
         }
-        
         return $this;
     }
 
@@ -194,4 +193,5 @@ class Zone
         return $this;
     }
 
+    
 }

@@ -5,20 +5,36 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\MenusTailleRepository;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: MenusTailleRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations:[
+        "get"=>[
+            "status"=>Response::HTTP_OK,
+            "normalization_context" => ["Groups" =>["MT:r:simple"]]
+        ],
+        "post"
+    ],
+    itemOperations:[
+        "get"=>[
+            "status"=>Response::HTTP_OK,
+            "normalization_context" => ["Groups" =>["MT:r:all"]]
+        ],
+        "put"
+    ]
+)]
 class MenusTaille
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["M:r:all","M:write","M:p:r:all"])]
+    #[Groups(["Menus:w","produit:r:a"])]
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(["M:r:all","M:write","M:p:r:all"])]
+    #[Groups(["Menus:w","produit:r:a"])]
     private $quantity;
 
     #[ORM\ManyToOne(targetEntity: Menus::class, inversedBy: 'menusTailles')]
@@ -27,7 +43,7 @@ class MenusTaille
 
     #[ORM\ManyToOne(targetEntity: Taille::class, inversedBy: 'menusTailles')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["M:r:all","M:write","M:p:r:all"])]
+    #[Groups(["Menus:w","produit:r:a"])]
     private $taille;
 
     public function getId(): ?int

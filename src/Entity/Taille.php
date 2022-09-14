@@ -40,19 +40,15 @@ class Taille
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups([
-        "T:r:simple","T:r:all",
-        "read:simple","read:all","write",
-        "M:r:all","M:write","M:p:r:all"
-    ])]
+    #[Groups(["Menus:w","produit:r:a","boisson:w"])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["T:r:simple","T:r:all","T:write","M:r:all","M:write"])]
+    #[Groups(["produit:r:a"])]
     private $libelle;
 
     #[ORM\OneToMany(mappedBy: 'taille', targetEntity: TailleBoisson::class)]
-    #[Groups(["M:r:all","M:write"])]
+    #[Groups(["produit:r:a"])]
     private $tailleBoissons;
 
     #[ORM\OneToMany(mappedBy: 'taille', targetEntity: MenusTaille::class)]

@@ -20,7 +20,10 @@ class CatalogueDataProvider implements ContextAwareCollectionDataProviderInterfa
      * []
      */
     public function getCollection(string $resourceClass, string $operationName = null, array $context = []){
-        return $context = [$this->menusRepo->findAll(),$this->burgerRepo->findAll() ];
+        return $context = [
+            "menus"=>$this->menusRepo->findAll(),
+            "burgers"=>$this->burgerRepo->findAll() 
+        ];
     }
 
     public function supports(string $resourceClass, string $operationName = null, array $context = []): bool{

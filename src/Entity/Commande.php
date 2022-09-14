@@ -2,87 +2,94 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\CommandeRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\MaxDepth;
-use Symfony\Component\Serializer\Annotation\SerializedName;
+
 
 #[ORM\Entity(repositoryClass: CommandeRepository::class)]
 #[ApiResource(
     collectionOperations:[
         "get"=>[
             "status"=> Response::HTTP_OK,
-            "normalization_context"=>["groups" => ["c:r:simple"]],
+            "normalization_context"=>["groups" => ["com:r:s"], "AbstractObjectNormalizer::ENABLE_MAX_DEPTH"=>true],
         ],
         "post"=>[
-            "denormalization_context"=>["groups" => ["c:write"]],
-            "security"=>"is_granted('ROLE_CLIENT')",
-            "security_message"=>"Vous n'avez pas d'accès"
+            "denormalization_context"=>["groups" => ["com:write"],"AbstractObjectNormalizer::ENABLE_MAX_DEPTH"=>true],
         ]
     ],
     itemOperations:[
         "get"=>[
             "status"=> Response::HTTP_OK,
-            // "normalization_context"=>["groups" => "c:r:all"]
+            "normalization_context"=>["groups" => "com:r:a"]
         ],
         "put"=>[
-            
+            "denormalization_context"=>["groups" => ["com:write"]]
         ]
     ]
 )]
+
+#[ApiFilter(SearchFilter::class, properties: ['code' => 'exact'])]
 class Commande
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(["c:r:all","L:r:simple","L:r:all","L:write"])]
+    #[Groups(["client:r:s","com:r:a","com:r:s","read:simple","read:all","L:r:simple","L:r:all","client:r:a","lvr:r:a"])]
     private $id;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(["c:r:all","c:r:simple"])]
+    #[Groups(["client:r:s","com:r:a","com:r:s","read:simple","read:all","client:r:a","user:r:s","lvr:r:a"])]
     private $prixTotal;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["c:r:all","c:r:simple"])]
+    #[Groups(["client:r:s","com:r:a","com:r:s","com:write","read:simple","read:all","L:r:simple","L:r:all","client:r:a","user:r:s",])]
     private $status = "EN COURS";
 
     #[ORM\ManyToOne(targetEntity: Gestionnaire::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(["c:r:all","c:r:simple"])]    
+    #[Groups(["com:r:a","com:r:s","com:write","L:r:simple","L:r:all"])] 
     private $gestionnaire;
 
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["c:r:all","c:r:simple"])]
+    #[Groups(["com:r:a","com:r:s","com:write","read:simple","read:all","L:r:all"])]
     private $client;
 
     #[ORM\ManyToOne(targetEntity: Livreur::class, inversedBy: 'commandes')]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[Groups(["com:r:a","com:r:s","com:write","read:simple","read:all","client:r:a",])]
     private $livreur;
 
     #[ORM\ManyToOne(targetEntity: Zone::class, inversedBy: 'commandes')]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[Groups(["com:r:a","com:r:s","com:write","user:r:s",])]
     private $zone;
 
-    #[ORM\Column(type: 'date')]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[ORM\Column(type: 'datetime')]
+    #[Groups(["client:r:s","com:r:a","com:r:s","read:simple","read:all","client:r:a","user:r:s","lvr:r:a"])]
     private $createAt;
 
     #[ORM\OneToMany(mappedBy: 'commande', targetEntity: LigneDeCommande::class, cascade:['persist'])]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
-    #[SerializedName("Produits")]
-    #[MaxDepth(2)]
+    #[Groups(["com:r:a","com:r:s","com:write",])]
+    #[MaxDepth(4)]
     private $ligneDeCommandes;
+
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(["client:r:s","com:r:a","com:r:s","com:write","read:simple","read:all","L:r:simple","L:r:all","client:r:a","user:r:s",])]
+    private $code;
+
 
     public function __construct()
     {
         $this->ligneDeCommandes = new ArrayCollection();
+        $this->createAt = new \DateTime();
     }
 
     public function getId(): ?int
@@ -200,6 +207,18 @@ class Commande
     public function setLivreur(?Livreur $livreur): self
     {
         $this->livreur = $livreur;
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(?string $code): self
+    {
+        $this->code = $code;
 
         return $this;
     }

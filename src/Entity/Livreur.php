@@ -2,12 +2,14 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use App\Entity\User;
 use App\Entity\Livraison;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\LivreurRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use DateTime;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\HttpFoundation\Response;
@@ -19,45 +21,52 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["read:simple"]],
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "securi_message" => "Vous n'avez pas accès à cette ressource"
+            // "normalization_context" => ["groups" => ["Lvr:r:s"]],
+            // "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            // "securi_message" => "Vous n'avez pas accès à cette ressource"
         ],
         "post"=>[
             "path" => "/register/livreur",
-            "denormalization_context" => ["groups" => ["write"]]
+            "denormalization_context" => ["groups" => ["lvr:write"]]
         ]
     ],
     itemOperations:
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["read:all"]]
+            "normalization_context" => ["groups" => ["lvr:r:a"]]
         ],
         "put" => [
-
+            
         ]
     ]
 )]
+#[ApiFilter(SearchFilter::class, properties: ['email' => 'exact',])]
 class Livreur extends User
 {
-
+    
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","read:all"])]
+    #[Groups(["read:simple","read:all","L:r:simple","L:r:all","user:r:s","lvr:r:a"])]
     private $etat = "Disponible";
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:all"])]
+    #[Groups(["L:r:simple","L:r:all","read:simple","read:all","user:r:s","lvr:r:a"])]
     private $matriculeMoto;
 
     #[ORM\OneToMany(mappedBy: 'livreur', targetEntity: Livraison::class)]
+    #[Groups(["user:r:s","read:all","lvr:r:a"])]
     private $livraisons;
 
     #[ORM\OneToMany(mappedBy: 'livreur', targetEntity: Commande::class)]
     private $commandes;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    #[Groups(["read:simple","read:all","write","L:r:simple","L:r:all","L:write","lvr:r:a"])]
+    private $phone;
+
     public function __construct()
     {
+        parent::__construct();
         $this->livraisons = new ArrayCollection();
         $this->matriculeMoto = "MOTO-".date_format(new DateTime, 'i-s');
         $this->roles [] = "ROLE_LIVREUR";
@@ -144,6 +153,18 @@ class Livreur extends User
                 $commande->setLivreur(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPhone(): ?string
+    {
+        return $this->phone;
+    }
+
+    public function setPhone(?string $phone): self
+    {
+        $this->phone = $phone;
 
         return $this;
     }

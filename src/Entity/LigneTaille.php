@@ -14,19 +14,21 @@ class LigneTaille
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
+    #[Groups(["com:r:a","com:update","com:r:s",])]
     private $id;
 
     #[ORM\ManyToOne(targetEntity: LigneDeCommande::class, inversedBy: 'ligneTailles')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
+    // #[Groups(["com:r:a","com:r:s","com:write"])]
     private $ligneDeCommande;
 
     #[ORM\ManyToOne(targetEntity: TailleBoisson::class, inversedBy: 'ligneTailles')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(["com:write",])]
     private $tailleBoisson;
 
-    #[ORM\Column(type: 'integer')]
-    #[Groups(["c:r:all","c:r:simple","c:write"])]
+    #[ORM\Column(type: 'integer', nullable: true)]
+    #[Groups(["com:r:a","com:update","com:r:s","com:write"])]
     private $quantity;
 
     public function getId(): ?int

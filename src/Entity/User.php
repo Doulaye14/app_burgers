@@ -2,12 +2,15 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -20,46 +23,49 @@ use Symfony\Component\Serializer\Annotation\SerializedName;
 #[ORM\DiscriminatorMap(["gestionnaire"=>"Gestionnaire","client"=>"Client","livreur"=>"Livreur"])]
 #[ApiResource(
     collectionOperations:[
-        "get",
+        "get"=>[
+           "satatus" => Response::HTTP_OK,
+           "normalization_context" => ["groups" => ["user:r:s"]]
+        ],
         "post"=>[
             "denormalization_context" => ["groups" => ["u:write"]],
         ]
     ],
     itemOperations:["get","put"]
 )]
-
+#[ApiFilter(SearchFilter::class, properties: ['email' => 'exact',])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     #[Groups([
-        "read:simple","write","read:all","M:write","u:r:all",
-        "c:r:all","c:write"
+        "read:simple","write","read:all","M:write","u:r:all","com:r:s",
+        "com:r:a","client:w","com:update","client:r:s","client:r:a","user:r:s","lvr:r:a"
     ])]
     private $id;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
-    #[Groups(["read:all","write","read:simple","u:r:all"])]
+    #[Groups(["read:all","write","read:simple","u:r:all","client:r:s","client:r:a","client:w","user:r:s"])]
     protected $email;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(["read:all","read:simple","u:r:all"])]
+    #[Groups(["read:all","read:simple","u:r:all","client:r:a","user:r:s"])]
     protected $roles = [];
 
     #[ORM\Column(type: 'string')]
     protected $password;
 
     #[SerializedName("password")]
-    #[Groups(["write"])]
+    #[Groups(["write","client:w","user:r:s"])]
     protected $plainPassword;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all","u:r:all"])]
+    #[Groups(["read:simple","write","read:all","u:r:all","com:update","com:r:a","com:r:s","client:r:s","client:r:a","client:w","user:r:s","lvr:r:a","L:r:all"])]
     protected $prenom;
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all","u:r:all"])]
+    #[Groups(["read:simple","write","read:all","u:r:all","com:update","com:r:a","com:r:s","client:r:s","client:r:a","client:w","user:r:s","lvr:r:a","L:r:all"])]
     protected $nom;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Produit::class)]
@@ -185,13 +191,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /**
-     * @return Collection<int, Produit>
-     */
-    public function getProduits(): Collection
-    {
-        return $this->produits;
-    }
+    // /**
+    //  * @return Collection<int, Produit>
+    //  */
+    // public function getProduits(): Collection
+    // {
+    //     return $this->produits;
+    // }
 
     public function addProduit(Produit $produit): self
     {

@@ -6,17 +6,35 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ProduitRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
-use ApiPlatform\Core\Annotation\ApiSubresource;
+use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 
 #[ORM\Entity(repositoryClass: ProduitRepository::class)]
 
 #[ORM\InheritanceType("JOINED")]
 #[ORM\DiscriminatorColumn(name:"type",type:"string")]
 #[ORM\DiscriminatorMap(["burger"=>"Burger","menus"=>"Menus","portionfrites"=>"PortionFrites","boisson"=>"Boisson"])]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations:[
+        "get"=>[
+            "status" => Response::HTTP_OK,
+            "normalization_context" => ["groups" => "produit:r:s"]
+        ],
+        "post"=>[
+            'denormalization_context'=>["groups" => "produit:w"]
+        ]
+    ],
+    itemOperations:[
+        "get" => [
+            "status"=>Response::HTTP_OK,
+            "normalization_context" => ["groups" => "produit:r:a"]
+        ],
+    ]
+)]
+
 class Produit
 {
     #[ORM\Id]
@@ -24,11 +42,12 @@ class Produit
     #[ORM\Column(type: 'integer')]
     #[Groups(
         [
-            "T:write","M:p:r:all",
-            "M:r:all","M:write",
-            "c:r:all","c:write",
-            "bg:r:simple","bg:r:all",
-            "F:r:all","F:r:simple","F:write"
+            "Menus:w","com:r:a","com:write",
+            "produit:w","com:update",
+            "produit:r:s","produit:r:a",
+            "Menus:r:a","Menus:r:s",
+            'burger:r:a','burger:r:s',
+            "tb:r:s","tb:r:a","client:r:a"
         ]
     )]
     protected $id;
@@ -36,45 +55,59 @@ class Produit
     #[ORM\Column(type: 'string', length: 255)]
     #[Groups(
         [
-            "read:simple","read:all","write",
-            "M:r:simple","M:r:all","por:write",
-            "bg:r:simple","bg:r:all","bg:write",
-            "F:r:all","F:r:simple","F:write"
+            "burger:w","portion:w","boisson:w",
+            "produit:r:s","produit:r:a",
+            'burger:r:a','burger:r:s',
+            'Menus:r:s','Menus:r:a',
+            "com:r:a","com:r:s","com:update",
+            "tb:r:s","tb:r:a","client:r:a"
         ]
     )]
     protected $nom;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'produits')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["Menus:w","produit:w"])]
     protected $user;
-
-    #[ORM\Column(type: 'blob', nullable: true)]
-    protected $image;
     
-    #[Groups(
-        [
-            "read:simple","read:all","write",
-            "M:r:simple","M:r:all","por:write",
-            "bg:r:simple","bg:r:all","bg:write",
-            "F:r:all","F:r:simple","F:write"
-        ]
-    )]
+    #[Groups(["burger:w","portion:w","boisson:w"])]
     #[SerializedName("image")]
     protected $plaineImage;
 
     #[ORM\Column(type: 'float', nullable: true)]
     #[Groups(
         [
-            "read:simple","read:all","write",
-            "M:r:simple","M:r:all","por:write","M:p:r:all",
-            "bg:r:simple","bg:r:all","bg:write",
-            "F:r:all","F:r:simple","F:write"
+            "burger:w","portion:w","com:update",
+            "produit:r:s","produit:r:a",
+            "Menus:r:s","Menus:r:a",
+            'burger:r:a','burger:r:s',
+            "com:r:a","com:r:s","client:r:a"
+
         ]
     )]
     protected $prix;
 
+    #[ORM\ManyToOne(targetEntity: Type::class, inversedBy: 'produits')]
+    private $type;
+
+
+    #[ORM\Column(type: 'blob', nullable: true)]
+    #[Groups(
+        [
+            "produit:r:s","produit:r:a",
+            "Menus:r:s","Menus:r:a",
+            'burger:r:a','burger:r:s',
+            "client:r:a",
+        ]
+    )]
+    protected $image;
+
     #[ORM\OneToMany(mappedBy: 'produit', targetEntity: LigneDeCommande::class)]
     protected $ligneDeCommandes;
+
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(["prod:r:all"])]
+    private $isEtat = true;
 
     public function __construct()
     {
@@ -110,15 +143,14 @@ class Produit
         return $this;
     }
 
-    public function getImage()
+    public function getImage(): ?string
     {
-        return $this->image;
+        return (is_resource($this->image)?(base64_encode(stream_get_contents($this->image))):$this->image); 
     }
 
     public function setImage($image): self
     {
         $this->image = $image;
-
         return $this;
     }
 
@@ -134,13 +166,13 @@ class Produit
         return $this;
     }
 
-    /**
-     * @return Collection<int, LigneDeCommande>
-     */
-    public function getLigneDeCommandes(): Collection
-    {
-        return $this->ligneDeCommandes;
-    }
+    // /**
+    //  * @return Collection|null <int, LigneDeCommande>
+    //  */
+    // public function getLigneDeCommandes():? Collection
+    // {
+    //     return $this->ligneDeCommandes;
+    // }
 
     public function addLigneDeCommande(LigneDeCommande $ligneDeCommande): self
     {
@@ -164,7 +196,6 @@ class Produit
         return $this;
     }
 
-
     /**
      * Get the value of plaineImage
      */ 
@@ -181,7 +212,31 @@ class Produit
     public function setPlaineImage($plaineImage)
     {
         $this->plaineImage = $plaineImage;
+        return $this;
+    }
+
+    public function getType(): ?Type
+    {
+        return $this->type;
+    }
+
+    public function setType(?Type $type): self
+    {
+        $this->type = $type;
 
         return $this;
     }
+
+    public function isIsEtat(): ?bool
+    {
+        return $this->isEtat;
+    }
+
+    public function setIsEtat(bool $isEtat): self
+    {
+        $this->isEtat = $isEtat;
+
+        return $this;
+    }
+    
 }

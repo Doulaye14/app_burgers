@@ -2,10 +2,13 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Annotation\ApiSubresource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,41 +19,43 @@ use Symfony\Component\Serializer\Annotation\Groups;
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => ["read:simple"]],
-            "security" => "is_granted('ROLE_GESTIONNAIRE')",
-            "securi_message" => "Vous n'avez pas accès à cette ressource"
+            "normalization_context" => ["groups" => ["client:r:s"]],
+            // "security" => "is_granted('ROLE_GESTIONNAIRE')",
+            // "securi_message" => "Vous n'avez pas accès à cette ressource"
         ],
         "post_register"=>[
             "method" => "post",
             "path" => "/register/client",
-            "denormalization_context" => ["groups" => ["write"]],
-            "normalization_context" => ["groups" => ["u:r:all"]]
+            "denormalization_context" => ["groups" => ["client:w"]],
+            "normalization_context" => ["groups" => ["client:r:a"]]
         ]
     ],
     itemOperations:
     [
         "get" => [
             "status" => Response::HTTP_OK,
-            "normalization_context" => ["groups" => [":r:all"]],
-            "security"=>"is_granted('ROLE_GESTIONNAIRE')",
-            "security_message"=>"Vous n'avez pas accès à cette ressouce !"
+            "normalization_context" => ["groups" => ["client:r:a"]],
+            // "security"=>"is_granted('ROLE_GESTIONNAIRE')",
+            // "security_message"=>"Vous n'avez pas accès à cette ressouce !"
         ],
         "put" => [
-            "security"=>"is_granted('ROLE_GESTIONNAIRE')",
-            "security_message"=>"Vous n'avez pas accès à cette ressouce !"
+            "denormalization_context" => ["groups" => ["client:w"]]
+            // "security"=>"is_granted('ROLE_GESTIONNAIRE')",
+            // "security_message"=>"Vous n'avez pas accès à cette ressouce !"
         ]
     ]
 )]
-
+#[ApiFilter(SearchFilter::class, properties: ['email' => 'exact',])]
 class Client extends User
 {
 
     #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(["read:simple","write","read:all","u:r:all"])]
+    #[Groups(["read:simple","write","read:all","client:r:s","client:r:a","client:w","com:r:a","com:r:s","com:update","user:r:s","L:r:all"])]
     private $phone;
 
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Commande::class)]
-    #[Groups(["read:all"])]
+    #[Groups(["read:all","client:r:s","client:r:a","user:r:s"])]
+    #[ApiSubresource()]
     private $commandes;
 
     public function __construct()

@@ -6,42 +6,64 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Repository\TailleBoissonRepository;
 use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\HttpFoundation\Response;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 
 #[ORM\Entity(repositoryClass: TailleBoissonRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations:[
+        "get"=>[
+            "status" => Response::HTTP_OK,
+            "normalization_context" => ["groups" => ["tb:r:s"]]
+        ],
+        "post"
+    ],
+    itemOperations:[
+        "get"=>[
+            "status" => Response::HTTP_OK,
+            "normalization_context" => ["groups" => ["tb:r:a"]]
+        ],
+        "put"
+    ]
+)]
 class TailleBoisson
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups([
-        "read:simple","read:all","write",
-        "c:r:all","c:r:simple","c:write",
-        "M:r:all","M:write"
-    ])]
+    #[Groups(["produit:r:a","boisson:w","com:write","tb:r:s","tb:r:a",])]
     private $id;
 
     #[ORM\Column(type: 'integer', nullable: true)]
-    #[Groups(["read:simple","read:all","write"])]
+    #[Groups(["produit:r:a","boisson:w","tb:r:s","tb:r:a"])]
     private $quantity;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(["read:simple","read:all","write"])]
+    #[Groups(["produit:r:a","boisson:w","com:r:a","com:r:s","tb:r:s","tb:r:a"])]
     private $prix;
 
     #[ORM\ManyToOne(targetEntity: Boisson::class, inversedBy: 'tailleBoissons')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(["produit:r:a","boisson:w","tb:r:s","tb:r:a"])]
     private $boisson;
 
     #[ORM\ManyToOne(targetEntity: Taille::class, inversedBy: 'tailleBoissons')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(["read:simple","read:all","write"])]
+    #[Groups(["boisson:w","tb:r:s","tb:r:a"])]
     private $taille;
 
     #[ORM\OneToMany(mappedBy: 'tailleBoisson', targetEntity: LigneTaille::class)]
     private $ligneTailles;
+
+    #[ORM\Column(type: 'blob', nullable: true)]
+    #[Groups(["produit:r:a","com:r:a","com:r:s","tb:r:s","tb:r:a"])]
+    private $image;
+
+    #[Groups(["boisson:w"])]
+    #[SerializedName('image')]
+    private $plaineImage;
 
     public function __construct()
     {
@@ -127,6 +149,38 @@ class TailleBoisson
                 $ligneTaille->setTailleBoisson(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getImage():? string
+    {
+        return (is_resource($this->image)?utf8_encode(base64_encode(stream_get_contents($this->image))):$this->image);
+    }
+
+    public function setImage($image): self
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of plaineImage
+     */ 
+    public function getPlaineImage()
+    {
+        return $this->plaineImage;
+    }
+
+    /**
+     * Set the value of plaineImage
+     *
+     * @return  self
+     */ 
+    public function setPlaineImage($plaineImage)
+    {
+        $this->plaineImage = $plaineImage;
 
         return $this;
     }
